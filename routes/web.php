@@ -16,8 +16,13 @@ Route::get('/dashboard', function () {
 
 // Bikin rute sementara buat Gudang biar nggak 404
 Route::get('/products', function () {
-    return view('products.index'); // Nanti kita bikin file ini
-});
+    return view('products.index');
+})->name('products.index');
+
+// Alias /gudang → sama dengan /products
+Route::get('/gudang', function () {
+    return view('products.index');
+})->name('gudang');
 
 // Rute untuk melihat halaman Dapur Produksi (Resep)
 Route::get('/dapur', function () {

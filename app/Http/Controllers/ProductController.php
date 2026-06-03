@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Product\AddStockRequest;
 use App\Http\Requests\Product\ReduceStockRequest;
 use App\Http\Requests\Product\StoreProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
+use App\Http\Resources\StockLogResource;
 use App\Models\Product;
+use App\Models\StockLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -133,11 +136,10 @@ class ProductController extends Controller
 
     /**
      * =====================================================================
-     * ENDPOINT KHUSUS: Potong Stok Bahan Baku
+     * ENDPOINT KHUSUS: Potong Stok Bahan Baku (Manual)
      * =====================================================================
-     * Endpoint ini memungkinkan chef/admin langsung mengurangi stok
-     * berdasarkan jumlah yang digunakan untuk membuat kue/masakan.
-     * Frontend tidak perlu kalkulasi manual.
+     * Memungkinkan chef/admin mengurangi stok secara manual.
+     * Setiap pengurangan dicatat ke tabel stock_logs.
      *
      * POST /api/products/{id}/reduce
      *
@@ -162,20 +164,168 @@ class ProductController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $previousQty = $product->qty;
+        $previousQty = (float) $product->qty;
         $product->decrement('qty', $reduceQty);
         $product->refresh();
+
+        // Catat ke stock_logs
+        StockLog::create([
+            'product_id'  => $product->id,
+            'user_id'     => $request->user()->id,
+            'type'        => 'reduce',
+            'qty_before'  => $previousQty,
+            'qty_changed' => $reduceQty,
+            'qty_after'   => (float) $product->qty,
+            'unit'        => $product->unit,
+            'note'        => $request->note,
+        ]);
 
         return response()->json([
             'success' => true,
             'message' => "Stok {$product->name} berhasil dikurangi sebesar {$reduceQty} {$product->unit}.",
             'data'    => [
                 'product'      => new ProductResource($product),
-                'previous_qty' => (float) $previousQty,
+                'previous_qty' => $previousQty,
                 'reduced_by'   => (float) $reduceQty,
                 'current_qty'  => (float) $product->qty,
                 'unit'         => $product->unit,
                 'note'         => $request->note,
+            ],
+        ], Response::HTTP_OK);
+    }
+
+    /**
+     * =====================================================================
+     * ENDPOINT KHUSUS: Tambah Stok / Restock
+     * =====================================================================
+     * Admin menambah stok bahan baku (pembelian/restock).
+     * Setiap penambahan dicatat ke tabel stock_logs.
+     *
+     * POST /api/products/{id}/add
+     *
+     * Request body:
+     *   - qty  (required) : jumlah yang ditambahkan
+     *   - note (optional) : catatan, misal "pembelian dari supplier Toko ABC"
+     */
+    public function addStock(AddStockRequest $request, Product $product): JsonResponse
+    {
+        $addQty = $request->qty;
+
+        $previousQty = (float) $product->qty;
+        $product->increment('qty', $addQty);
+        $product->refresh();
+
+        // Catat ke stock_logs
+        StockLog::create([
+            'product_id'  => $product->id,
+            'user_id'     => $request->user()->id,
+            'type'        => 'add',
+            'qty_before'  => $previousQty,
+            'qty_changed' => $addQty,
+            'qty_after'   => (float) $product->qty,
+            'unit'        => $product->unit,
+            'note'        => $request->note,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Stok {$product->name} berhasil ditambah sebesar {$addQty} {$product->unit}.",
+            'data'    => [
+                'product'      => new ProductResource($product),
+                'previous_qty' => $previousQty,
+                'added_by'     => (float) $addQty,
+                'current_qty'  => (float) $product->qty,
+                'unit'         => $product->unit,
+                'note'         => $request->note,
+            ],
+        ], Response::HTTP_OK);
+    }
+
+    /**
+     * =====================================================================
+     * ENDPOINT SUMMARY / DASHBOARD
+     * =====================================================================
+     * Mengembalikan ringkasan kondisi stok bahan baku untuk keperluan dashboard.
+     *
+     * GET /api/products/summary
+     */
+    public function summary(): JsonResponse
+    {
+        $total  = Product::count();
+        $out    = Product::outOfStock()->count();
+        $low    = Product::lowStock()->count();
+        $normal = Product::normalStock()->count();
+
+        // Ambil produk yang stoknya habis atau rendah untuk notifikasi
+        $alertProducts = Product::where(function ($q) {
+            $q->where('qty', '<=', 0)
+              ->orWhereColumn('qty', '<=', 'min_qty');
+        })
+        ->orderByRaw('qty ASC')
+        ->get(['id', 'name', 'category', 'unit', 'qty', 'min_qty']);
+
+        $alertData = $alertProducts->map(fn ($p) => [
+            'id'           => $p->id,
+            'name'         => $p->name,
+            'category'     => $p->category,
+            'unit'         => $p->unit,
+            'qty'          => (float) $p->qty,
+            'min_qty'      => (float) $p->min_qty,
+            'stock_status' => $p->stock_status,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ringkasan stok berhasil diambil.',
+            'data'    => [
+                'total_products'  => $total,
+                'stock_out'       => $out,
+                'stock_low'       => $low,
+                'stock_normal'    => $normal,
+                'alert_products'  => $alertData,
+            ],
+        ], Response::HTTP_OK);
+    }
+
+    /**
+     * =====================================================================
+     * Riwayat Perubahan Stok per Produk
+     * =====================================================================
+     * Menampilkan histori log stok untuk satu produk tertentu.
+     *
+     * GET /api/products/{id}/logs
+     */
+    public function logs(Request $request, Product $product): JsonResponse
+    {
+        $query = $product->stockLogs()
+                         ->with(['user', 'recipe'])
+                         ->latest();
+
+        // Filter berdasarkan tipe
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter berdasarkan rentang tanggal
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $logs = $query->paginate($request->input('per_page', 20));
+
+        return response()->json([
+            'success' => true,
+            'message' => "Riwayat stok {$product->name} berhasil diambil.",
+            'data'    => StockLogResource::collection($logs->items()),
+            'meta'    => [
+                'product'      => ['id' => $product->id, 'name' => $product->name],
+                'total'        => $logs->total(),
+                'per_page'     => $logs->perPage(),
+                'current_page' => $logs->currentPage(),
+                'last_page'    => $logs->lastPage(),
             ],
         ], Response::HTTP_OK);
     }
