@@ -219,42 +219,6 @@ async function eksekusiResep() {
     btn.disabled = true;
     btn.innerHTML = '<span class="animate-spin">⏳</span> Memproses...';
 
-<<<<<<< HEAD
-    async function produksiSekarang() {
-        const judulResep = document.getElementById('modalJudul').innerText;
-        const token = localStorage.getItem('auth_token');
-
-        // Kasih konfirmasi dulu biar Chef gak kepencet
-        if(confirm(`Yakin mau memproduksi ${judulResep} sekarang? Stok bahan baku terkait akan terpotong otomatis.`)) {
-            
-            try {
-                // TANYA TEMEN BE: Endpoint URL-nya apa dan variabel body-nya minta apa?
-                // Sementara aku tulis '/api/recipes/produce' sebagai contoh
-                const response = await fetch('/api/recipes/produce', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token,
-                        'Accept': 'application/json'
-                    },
-                    // Misal temenmu minta dikirimin nama resepnya:
-                    body: JSON.stringify({ nama_resep: judulResep }) 
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    alert("✅ Produksi Berhasil! Bahan baku sudah terpotong otomatis di gudang.");
-                    tutupResep();
-                } else {
-                    alert("❌ Gagal: " + (result.message || "Bahan baku mungkin tidak cukup untuk resep ini."));
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert("❌ Gagal menghubungi server.");
-            }
-        }
-=======
     try {
         const res = await fetch(`/api/recipes/${selectedRecipe.id}/execute`, {
             method: 'POST',
@@ -291,7 +255,6 @@ async function eksekusiResep() {
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<span>👨‍🍳</span> Mulai Produksi (Potong Stok Otomatis)';
->>>>>>> 5bd979d1df27f0b9d6899f7474a15aa575c5ecfc
     }
 }
 

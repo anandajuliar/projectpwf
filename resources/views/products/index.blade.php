@@ -334,47 +334,6 @@ function renderAdmin(products) {
         return;
     }
 
-<<<<<<< HEAD
-    async function kurangiStok(id) {
-        // 1. Minta Chef masukin jumlah yang mau dipake
-        const jumlahDipakai = window.prompt("Berapa banyak bahan yang mau dipakai? (Masukkan angka saja):");
-
-        // 2. Cegah error kalau Chef klik cancel atau masukin huruf
-        if (jumlahDipakai === null) return; 
-        if (jumlahDipakai.trim() === "" || isNaN(jumlahDipakai) || jumlahDipakai <= 0) {
-            alert("❌ Masukkan angka yang valid dong!");
-            return;
-        }
-
-        const token = localStorage.getItem('auth_token');
-        const role = localStorage.getItem('user_role');
-
-        try {
-            // 3. Tembak endpoint Backend!
-            const response = await fetch(`/api/products/${id}/reduce`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ qty: parseInt(jumlahDipakai) }) 
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                alert("✅ Sukses: " + (result.message || "Bahan berhasil dipotong!"));
-                // 4. Langsung refresh data di layar biar angkanya update!
-                fetchProducts(token, role);
-            } else {
-                alert("❌ Gagal: " + (result.message || "Stok gak cukup atau ada error."));
-            }
-        } catch (error) {
-            console.error('Error Jaringan:', error);
-            alert("❌ Gagal terhubung ke server backend!");
-        }
-=======
     tbody.innerHTML = products.map(p => {
         const statusBadge = {
             'normal': `<span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-0.5 rounded-full">Normal</span>`,
@@ -416,7 +375,6 @@ function renderChef(products) {
     if (!products.length) {
         grid.innerHTML = '<div class="col-span-4 text-center py-12 text-gray-400">Tidak ada bahan baku ditemukan.</div>';
         return;
->>>>>>> 5bd979d1df27f0b9d6899f7474a15aa575c5ecfc
     }
 
     const statusCfg = {
