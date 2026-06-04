@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -36,6 +37,14 @@ class Product extends Model
             'min_qty'        => 'decimal:2',
             'price_per_unit' => 'decimal:2',
         ];
+    }
+
+    /**
+     * Relasi ke riwayat perubahan stok produk ini.
+     */
+    public function stockLogs(): HasMany
+    {
+        return $this->hasMany(\App\Models\StockLog::class);
     }
 
     /**
