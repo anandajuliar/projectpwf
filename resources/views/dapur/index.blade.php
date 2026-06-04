@@ -138,7 +138,6 @@ function renderResep(recipes) {
 }
 
 async function bukaResep(recipe) {
-    // Ambil detail lengkap termasuk bahan dari API
     try {
         const res  = await fetch(`/api/recipes/${recipe.id}`, {
             headers: { 'Authorization': 'Bearer ' + authToken, 'Accept': 'application/json' }
@@ -233,9 +232,12 @@ async function eksekusiResep() {
         const json = await res.json();
 
         if (res.ok && json.success) {
+            const pesanToast = json.message || `✅ Berhasil memproduksi ${portions} porsi "${selectedRecipe.name}"!`;
             tutupResep();
-            const reduced = json.data.items_reduced || [];
-            tampilToast('success', `✅ ${portions} porsi "${selectedRecipe.name}" berhasil dibuat! Stok ${reduced.length} bahan dikurangi otomatis.`);
+            tampilToast('success', pesanToast);
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         } else {
             // Tampilkan detail bahan yang tidak mencukupi
             if (json.data?.insufficient_items?.length) {
@@ -250,8 +252,8 @@ async function eksekusiResep() {
             errEl.style.whiteSpace = 'pre-line';
         }
     } catch (e) {
-        errEl.innerText = 'Koneksi ke server gagal.';
-        errEl.classList.remove('hidden');
+        console.error("Crash JS:", e);
+        tampilToast('error', 'Terjadi kesalahan sistem di frontend.');
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<span>👨‍🍳</span> Mulai Produksi (Potong Stok Otomatis)';
