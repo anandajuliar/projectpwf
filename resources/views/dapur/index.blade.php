@@ -75,9 +75,40 @@
         document.getElementById('modalResep').classList.add('hidden');
     }
 
-    function produksiSekarang() {
-        alert("Simulasi Produksi: Instruksi memotong " + document.getElementById('modalJudul').innerText + " sedang disiapkan untuk API Backend!");
-        tutupResep();
+    async function produksiSekarang() {
+        const judulResep = document.getElementById('modalJudul').innerText;
+        const token = localStorage.getItem('auth_token');
+
+        // Kasih konfirmasi dulu biar Chef gak kepencet
+        if(confirm(`Yakin mau memproduksi ${judulResep} sekarang? Stok bahan baku terkait akan terpotong otomatis.`)) {
+            
+            try {
+                // TANYA TEMEN BE: Endpoint URL-nya apa dan variabel body-nya minta apa?
+                // Sementara aku tulis '/api/recipes/produce' sebagai contoh
+                const response = await fetch('/api/recipes/produce', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token,
+                        'Accept': 'application/json'
+                    },
+                    // Misal temenmu minta dikirimin nama resepnya:
+                    body: JSON.stringify({ nama_resep: judulResep }) 
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("✅ Produksi Berhasil! Bahan baku sudah terpotong otomatis di gudang.");
+                    tutupResep();
+                } else {
+                    alert("❌ Gagal: " + (result.message || "Bahan baku mungkin tidak cukup untuk resep ini."));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert("❌ Gagal menghubungi server.");
+            }
+        }
     }
 </script>
 @endsection
