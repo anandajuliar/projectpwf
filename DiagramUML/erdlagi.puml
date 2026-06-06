@@ -1,0 +1,97 @@
+@startuml BakeLab_ERD
+
+' Konfigurasi tampilan biar garisnya rapi (menyiku) dan bersih
+skinparam linetype ortho
+skinparam shadowing false
+skinparam EntityBackgroundColor #F9F9F9
+skinparam EntityBorderColor #2C3E50
+skinparam ArrowColor #2980B9
+
+title Entity-Relationship Diagram (ERD) - BakeLab
+
+' ==========================================
+' ENTITAS / TABEL
+' ==========================================
+
+entity "users" as users {
+  * id : bigint <<PK>>
+  --
+  * name : string
+  * email : string <<unique>>
+  * password : string
+  * role : enum('admin', 'chef')
+  * is_active : boolean
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "products" as products {
+  * id : bigint <<PK>>
+  --
+  * name : string
+  description : text
+  category : string
+  * unit : string
+  * qty : decimal(10,2)
+  * min_qty : decimal(10,2)
+  * price_per_unit : decimal(15,2)
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "recipes" as recipes {
+  * id : bigint <<PK>>
+  --
+  * name : string
+  description : text
+  category : string
+  * default_portions : smallint
+  * created_by : bigint <<FK>>
+  * is_active : boolean
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "recipe_ingredients" as recipe_ingredients {
+  * id : bigint <<PK>>
+  --
+  * recipe_id : bigint <<FK>>
+  * product_id : bigint <<FK>>
+  * qty_per_portion : decimal(10,2)
+  note : string
+}
+
+entity "stock_logs" as stock_logs {
+  * id : bigint <<PK>>
+  --
+  * product_id : bigint <<FK>>
+  * user_id : bigint <<FK>>
+  * type : enum('reduce', 'add', 'recipe_reduce')
+  * qty_before : decimal(10,2)
+  * qty_changed : decimal(10,2)
+  * qty_after : decimal(10,2)
+  * unit : string
+  recipe_id : bigint <<FK>> [nullable]
+  portions : smallint [nullable]
+  note : string [nullable]
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+' ==========================================
+' RELASI ANTAR TABEL (Crow's Foot Notation)
+' ==========================================
+' Notasi:
+' ||--o{  : One to Many (Satu ke Banyak)
+' |o--o{  : Zero or One to Many (Bisa Null ke Banyak)
+
+users ||--o{ recipes : "dibuat oleh"
+users ||--o{ stock_logs : "dicatat oleh"
+
+products ||--o{ recipe_ingredients : "digunakan di"
+products ||--o{ stock_logs : "riwayat perubahan"
+
+recipes ||--o{ recipe_ingredients : "komposisi bahan"
+recipes |o--o{ stock_logs : "potongan otomatis resep"
+
+@enduml

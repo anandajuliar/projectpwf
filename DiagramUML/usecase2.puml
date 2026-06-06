@@ -1,0 +1,64 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Chef" as chef
+actor "Admin" as admin
+
+rectangle "Sistem Manajemen Stok & Resep" {
+  usecase "Login" as UC_Login
+  
+  ' Kelompok 1: Khusus Chef
+  usecase "Eksekusi Resep\n(Potong Otomatis)" as UC_ExecRecipe
+  usecase "Potong Stok Manual" as UC_ReduceManual
+  
+  ' Kelompok 2: Shared / Barengan
+  usecase "Cek Profil (Me)" as UC_Profile
+  usecase "Melihat Produk" as UC_ViewProduct
+  usecase "Melihat Resep" as UC_ViewRecipe
+  usecase "Logout" as UC_Logout
+  
+  ' Kelompok 3: Khusus Admin
+  usecase "Melihat Stock Log" as UC_ViewLog
+  usecase "Manajemen User\n(CRUD & Registrasi)" as UC_ManageUser
+  usecase "Manajemen Produk\n(CRUD & Restock)" as UC_ManageProduct
+  usecase "Manajemen Resep\n(CRUD Resep)" as UC_ManageRecipe
+}
+
+' ==========================================
+' RELASI AKTOR KE KEGIATAN
+' ==========================================
+chef --> UC_ExecRecipe
+chef --> UC_ReduceManual
+chef --> UC_Profile
+chef --> UC_ViewProduct
+chef --> UC_ViewRecipe
+chef --> UC_Logout
+
+admin --> UC_Profile
+admin --> UC_ViewProduct
+admin --> UC_ViewRecipe
+admin --> UC_Logout
+admin --> UC_ViewLog
+admin --> UC_ManageUser
+admin --> UC_ManageProduct
+admin --> UC_ManageRecipe
+
+' ==========================================
+' RELASI INCLUDE & EXTEND KE LOGIN
+' ==========================================
+' PANAH EXTEND DIBALIK (Dari Login ke Logout)
+UC_Login ..> UC_Logout : <<extend>>
+
+' PANAH INCLUDE (Semua menuju ke Login)
+UC_ExecRecipe ..> UC_Login : <<include>>
+UC_ReduceManual ..> UC_Login : <<include>>
+UC_Profile ..> UC_Login : <<include>>
+UC_ViewProduct ..> UC_Login : <<include>>
+UC_ViewRecipe ..> UC_Login : <<include>>
+UC_ViewLog ..> UC_Login : <<include>>
+UC_ManageUser ..> UC_Login : <<include>>
+UC_ManageProduct ..> UC_Login : <<include>>
+UC_ManageRecipe ..> UC_Login : <<include>>
+@enduml
