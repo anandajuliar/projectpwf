@@ -1,0 +1,44 @@
+@startuml
+|Chef/Admin|
+start
+:Pilih Resep yang akan dibuat;
+:Input Jumlah Porsi;
+|Sistem Backend API|
+:Validasi Token & Role Pengguna;
+:Ambil Data Resep & Komposisi Bahan;
+
+  if (Apakah data resep aktif?) then (ya)
+    :Mulai Database Transaction;
+    partition "Loop Setiap Bahan Resep" {
+      while (Ada bahan yang belum dicek?) is (ada)
+        :Hitung total kebutuhan stok
+        (qty_per_portion * jumlah porsi);
+        
+        if (Apakah stok produk cukup?) then (tidak)
+          |Sistem Backend API|
+          :Rollback Transaction;
+          :Set Pesan Error "Stok Tidak Cukup";
+          |Chef/Admin|
+          :Menerima Respon Gagal;
+          end
+        else (ya)
+          |Sistem Backend API|
+          :Kurangi qty pada tabel 'products';
+          :Buat record baru di tabel 'stock_logs'
+          (type = 'recipe_reduce');
+        endif
+      endwhile (habis)
+    }
+    :Commit Database Transaction;
+    :Kirim Respon Sukses (200 OK);
+    |Chef/Admin|
+    :Menerima Notifikasi Berhasil;
+  else (tidak)
+    |Sistem Backend API|
+    :Kirim Respon Error "Resep Tidak Aktif";
+    |Chef/Admin|
+    :Menerima Respon Gagal;
+  endif
+
+stop
+@endum

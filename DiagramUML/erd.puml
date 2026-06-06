@@ -1,0 +1,69 @@
+@startuml
+' Konfigurasi tampilan ERD
+hide circle
+skinparam linetype ortho
+
+entity "users" {
+  * id : BIGINT <<PK>>
+  --
+  * name : VARCHAR
+  * email : VARCHAR
+  * password : VARCHAR
+  * role : VARCHAR
+  * is_active : BOOLEAN
+}
+
+entity "products" {
+  * id : BIGINT <<PK>>
+  --
+  * name : VARCHAR
+  description : TEXT
+  * category : VARCHAR
+  * unit : VARCHAR
+  * qty : DECIMAL
+  * min_qty : DECIMAL
+  * price_per_unit : DECIMAL
+}
+
+entity "recipes" {
+  * id : BIGINT <<PK>>
+  --
+  * name : VARCHAR
+  description : TEXT
+  * category : VARCHAR
+  * default_portions : INT
+  * created_by : BIGINT <<FK>>
+}
+
+entity "recipe_ingredients" {
+  * id : BIGINT <<PK>>
+  --
+  * recipe_id : BIGINT <<FK>>
+  * product_id : BIGINT <<FK>>
+  * qty_per_portion : DECIMAL
+  note : VARCHAR
+}
+
+entity "stock_logs" {
+  * id : BIGINT <<PK>>
+  --
+  * product_id : BIGINT <<FK>>
+  * user_id : BIGINT <<FK>>
+  * type : VARCHAR
+  * qty_before : DECIMAL
+  * qty_changed : DECIMAL
+  * qty_after : DECIMAL
+  * unit : VARCHAR
+  recipe_id : BIGINT <<FK>>
+  portions : INT
+  note : TEXT
+}
+
+' Relasi antar Entitas
+users "1" --o{ recipes : "creates"
+users "1" --o{ stock_logs : "records"
+products "1" --o{ recipe_ingredients : "used in"
+products "1" --o{ stock_logs : "logged"
+recipes "1" --o{ recipe_ingredients : "contains"
+recipes "1" --o{ stock_logs : "triggered by"
+@endum
