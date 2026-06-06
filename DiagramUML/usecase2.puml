@@ -34,12 +34,10 @@ chef --> UC_ReduceManual
 chef --> UC_Profile
 chef --> UC_ViewProduct
 chef --> UC_ViewRecipe
-chef --> UC_Logout
 
 admin --> UC_Profile
 admin --> UC_ViewProduct
 admin --> UC_ViewRecipe
-admin --> UC_Logout
 admin --> UC_ViewLog
 admin --> UC_ManageUser
 admin --> UC_ManageProduct
