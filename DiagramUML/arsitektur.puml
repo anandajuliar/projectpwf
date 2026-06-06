@@ -1,0 +1,61 @@
+@startuml BakeLab_Architecture
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+
+title Architecture Diagram - BakeLab (Monolithic Local)
+
+' ==========================================
+' USER & CLIENT TIER
+' ==========================================
+actor "Admin / Chef" as user
+
+node "Client Device" {
+  component "Web Browser\n(Chrome / Safari)" as browser
+}
+
+' ==========================================
+' APPLICATION TIER (MONOLITH)
+' ==========================================
+node "Local Server (localhost:8000)" {
+  package "Laravel 13 Application (PHP 8.3)" {
+    
+    component "Presentation Layer" as presentation {
+      [Blade Templates (UI)]
+    }
+    
+    component "Security Layer" as security {
+      [Laravel Sanctum (Auth)]
+    }
+    
+    component "Business Logic Layer" as logic {
+      [Routes & Controllers]
+    }
+    
+    component "Data Access Layer" as data_access {
+      [Eloquent ORM (Models)]
+    }
+    
+  }
+}
+
+' ==========================================
+' DATABASE TIER
+' ==========================================
+database "Local Database" {
+  [MySQL (Laragon/XAMPP)] as db
+}
+
+' ==========================================
+' ALUR KOMUNIKASI (MAPPING)
+' ==========================================
+user -> browser : Berinteraksi
+
+browser <--> presentation : HTTP / HTTPS Request (Render HTML)
+browser ..> security : Kirim Kredensial / Token
+
+presentation --> logic : Teruskan Input User
+logic <--> data_access : Proses CRUD
+data_access <--> db : Query SQL
+
+@enduml
