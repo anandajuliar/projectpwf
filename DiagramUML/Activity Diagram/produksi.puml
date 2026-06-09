@@ -1,0 +1,38 @@
+@startuml
+|User|
+start
+:Membuka halaman Dapur Produksi;
+:Memilih kartu Resep;
+:Menentukan Jumlah Porsi;
+:Klik tombol "Mulai Produksi";
+
+|System|
+if (Jumlah porsi < 1?) then (Ya)
+    :Tampilkan teks error merah di dalam modal;
+    stop
+else (Tidak)
+    :Ubah status tombol jadi disabled/loading;
+    
+    |Database|
+    :Ambil data komposisi bahan resep;
+    :Bandingkan kebutuhan dengan sisa stok produk;
+    
+    if (Ada bahan baku yang kurang?) then (Ya)
+        |System|
+        :Tampilkan daftar bahan kurang;
+        :Aktifkan kembali tombol;
+        stop
+    else (Tidak)
+        :Potong semua stok bahan baku terkait;
+        :Simpan log riwayat produksi;
+        
+        |System|
+        :Tutup pop-up modal resep;
+        :Munculkan Toast hijau sukses;
+        :Muat ulang halaman;
+        |User|
+        :Melihat halaman ter-refresh dengan stok baru;
+        stop
+    endif
+endif
+@enduml

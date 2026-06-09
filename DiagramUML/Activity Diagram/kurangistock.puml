@@ -1,0 +1,29 @@
+@startuml
+|User|
+start
+:Membuka halaman Cek Sisa Stok;
+:Klik tombol "Gunakan Bahan" pada item;
+:Menginput jumlah pemakaian dan catatan (opsional);
+
+|System|
+if (Apakah input valid / > 0?) then (Tidak)
+    :Menampilkan pesan error input;
+    stop
+else (Ya)
+    |Database|
+    :Cek ketersediaan sisa stok;
+    
+    if (Stok di database mencukupi?) then (Tidak)
+        |System|
+        :Menampilkan pesan stok tidak cukup;
+        stop
+    else (Ya)
+        :Update / kurangi kuantiti stok di tabel produk;
+        |System|
+        :Menampilkan Toast Sukses;
+        |User|
+        :Melihat pembaruan angka stok secara instan;
+        stop
+    endif
+endif
+@enduml

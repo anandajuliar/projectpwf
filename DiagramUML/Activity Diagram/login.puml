@@ -1,0 +1,30 @@
+@startuml
+|User|
+start
+:Membuka halaman Login;
+:Menginput Email dan Password;
+:Klik tombol "Login";
+
+|System|
+:Menerima input kredensial;
+:Validasi format input;
+
+|Database|
+:Mencocokkan data user;
+
+if (Data user ditemukan?) then (Tidak)
+    |System|
+    :Mengembalikan respon error;
+    :Menampilkan pesan "Email/Password Salah";
+    |User|
+    :Melihat pesan gagal;
+    stop
+else (Ya)
+    |System|
+    :Generate Token;
+    :Simpan sesi login;
+    |User|
+    :Redirect ke halaman Dashboard/Dapur;
+    stop
+endif
+@enduml
