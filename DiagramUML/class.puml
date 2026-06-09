@@ -1,0 +1,183 @@
+@startuml
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+skinparam class {
+    BackgroundColor White
+    BorderColor #555555
+    ArrowColor #333333
+    HeaderBackgroundColor #FEF3C7
+    HeaderBorderColor #D97706
+}
+
+' ============================================================
+' ACTOR / ENUM (role)
+' ============================================================
+
+enum Role {
+    admin
+    chef
+}
+
+' ============================================================
+' MODEL CLASSES
+' ============================================================
+
+class User {
+    + id : int
+    + name : string
+    + email : string
+    - password : string
+    + role : Role
+    + is_active : boolean
+    + email_verified_at : datetime
+    + created_at : datetime
+    + updated_at : datetime
+    --
+    + isAdmin() : bool
+    + isChef() : bool
+    + scopeAdmin(query) : Builder
+    + scopeChef(query) : Builder
+}
+
+class Product {
+    + id : int
+    + name : string
+    + description : string
+    + category : string
+    + unit : string
+    + qty : decimal
+    + min_qty : decimal
+    + price_per_unit : decimal
+    + created_at : datetime
+    + updated_at : datetime
+    --
+    + getStockStatusAttribute() : string
+    + scopeOutOfStock(query) : Builder
+    + scopeLowStock(query) : Builder
+    + scopeNormalStock(query) : Builder
+}
+
+class Recipe {
+    + id : int
+    + name : string
+    + description : string
+    + category : string
+    + default_portions : int
+    + created_by : int <<FK>>
+    + is_active : boolean
+    + created_at : datetime
+    + updated_at : datetime
+    --
+    + getCostPerPortionAttribute() : float
+    + scopeActive(query) : Builder
+}
+
+class RecipeIngredient {
+    + id : int
+    + recipe_id : int <<FK>>
+    + product_id : int <<FK>>
+    + qty_per_portion : decimal
+    + note : string
+}
+
+class StockLog {
+    + id : int
+    + product_id : int <<FK>>
+    + user_id : int <<FK>>
+    + recipe_id : int <<FK, nullable>>
+    + type : string
+    + qty_before : decimal
+    + qty_changed : decimal
+    + qty_after : decimal
+    + unit : string
+    + portions : int
+    + note : string
+    + created_at : datetime
+    + updated_at : datetime
+    --
+    + scopeOfType(query, type) : Builder
+    + scopeForProduct(query, productId) : Builder
+    + scopeByUser(query, userId) : Builder
+    + scopeInDateRange(query, from, to) : Builder
+}
+
+' ============================================================
+' CONTROLLER CLASSES
+' ============================================================
+
+class AuthController {
+    + login(request) : JsonResponse
+    + register(request) : JsonResponse
+    + logout(request) : JsonResponse
+    + me(request) : JsonResponse
+}
+
+class UserController {
+    + index(request) : JsonResponse
+    + show(request, user) : JsonResponse
+    + update(request, user) : JsonResponse
+    + toggleActive(request, user) : JsonResponse
+    + destroy(request, user) : JsonResponse
+}
+
+class ProductController {
+    + index(request) : JsonResponse
+    + store(request) : JsonResponse
+    + show(product) : JsonResponse
+    + update(request, product) : JsonResponse
+    + destroy(product) : JsonResponse
+    + reduceStock(request, product) : JsonResponse
+    + addStock(request, product) : JsonResponse
+    + summary() : JsonResponse
+    + logs(request, product) : JsonResponse
+}
+
+class RecipeController {
+    + index(request) : JsonResponse
+    + store(request) : JsonResponse
+    + show(recipe) : JsonResponse
+    + update(request, recipe) : JsonResponse
+    + destroy(recipe) : JsonResponse
+    + execute(request, recipe) : JsonResponse
+}
+
+class StockLogController {
+    + index(request) : JsonResponse
+    + show(stockLog) : JsonResponse
+}
+
+' ============================================================
+' RELASI ANTAR MODEL
+' ============================================================
+
+User "1" --> "0..*" Recipe        : creates >
+User "1" --> "0..*" StockLog      : performs >
+Product "1" --> "0..*" StockLog   : tracked by >
+Recipe "1" --> "1..*" RecipeIngredient : contains >
+Product "1" --> "0..*" RecipeIngredient : used in >
+Recipe "0..1" --> "0..*" StockLog : triggers >
+
+' ============================================================
+' RELASI CONTROLLER KE MODEL
+' ============================================================
+
+AuthController ..> User             : <<uses>>
+UserController ..> User             : <<manages>>
+ProductController ..> Product       : <<manages>>
+ProductController ..> StockLog      : <<creates>>
+RecipeController ..> Recipe         : <<manages>>
+RecipeController ..> RecipeIngredient : <<manages>>
+RecipeController ..> StockLog       : <<creates>>
+StockLogController ..> StockLog     : <<reads>>
+
+' ============================================================
+' ENUM RELASI
+' ============================================================
+
+User --> Role : has
+
+@enduml
