@@ -1,0 +1,22 @@
+@startuml
+|Admin|
+start
+:Membuka halaman Dashboard;
+
+|System|
+:Memicu fungsi penarikan data performa toko;
+:Meminta data agregat stok rendah & log produksi;
+
+|Database|
+:Query tabel 'products' (cek qty < min_qty);
+:Query tabel 'recipes' / log aktivitas terbaru;
+:Mengembalikan data ke sistem;
+
+|System|
+:Menghitung statistik data;
+:Render grafik chart & memunculkan badge alert stok tipis;
+
+|User (Admin)|
+:Melihat ringkasan grafik & peringatan stok di layar;
+stop
+@enduml
