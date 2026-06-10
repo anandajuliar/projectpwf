@@ -93,8 +93,12 @@
                         btnLabel.textContent = 'Berhasil, mengalihkan...';
                         window.location.href = userRole === 'admin' ? '/dashboard' : '/products';
                     } else {
+<<<<<<< HEAD
+                        errorBox.innerHTML = "Akses Ditolak! " + (responBackend.message || "Email/Password salah!");
+=======
                         // Respons berhasil tapi token tidak tersedia — seharusnya tidak terjadi
                         errorTxt.textContent = 'Terjadi kesalahan pada sistem. Silakan coba lagi atau hubungi administrator.';
+>>>>>>> f5f09724dc2df00cc30be900d0299641fb86156b
                         errorBox.classList.remove('hidden');
                         resetBtn();
                     }

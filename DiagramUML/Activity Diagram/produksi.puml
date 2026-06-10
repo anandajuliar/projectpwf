@@ -1,18 +1,16 @@
 @startuml
 |User|
 start
-:Membuka halaman Dapur Produksi;
-:Memilih kartu Resep;
+:Membuka halaman "Dapur Produksi";
+:Memilih Resep;
 :Menentukan Jumlah Porsi;
 :Klik tombol "Mulai Produksi";
 
 |System|
 if (Jumlah porsi < 1?) then (Ya)
-    :Tampilkan teks error merah di dalam modal;
+    :Tampilkan teks error;
     stop
 else (Tidak)
-    :Ubah status tombol jadi disabled/loading;
-    
     |Database|
     :Ambil data komposisi bahan resep;
     :Bandingkan kebutuhan dengan sisa stok produk;

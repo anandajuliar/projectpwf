@@ -27,9 +27,26 @@
                 <th class="text-center py-3 px-4 uppercase font-semibold text-sm">Aksi</th>
             </tr>
         </thead>
+<<<<<<< HEAD
+        <tbody class="text-gray-700">
+            <tr class="border-b hover:bg-gray-50">
+                <td class="text-left py-3 px-4 flex items-center"><span class="text-2xl mr-2">👨‍💼</span> Admin Utama</td>
+                <td class="text-left py-3 px-4">admin@pwf.com</td>
+                <td class="text-left py-3 px-4"><span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Admin Gudang</span></td>
+                <td class="text-center py-3 px-4 text-gray-400 italic">Tidak bisa dihapus</td>
+            </tr>
+            <tr class="border-b hover:bg-gray-50">
+                <td class="text-left py-3 px-4 flex items-center"><span class="text-2xl mr-2">👨‍🍳</span> Chef Budi</td>
+                <td class="text-left py-3 px-4">chef@pwf.com</td>
+                <td class="text-left py-3 px-4"><span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Staf Dapur</span></td>
+                <td class="text-center py-3 px-4">
+                    <button class="text-red-500 hover:text-red-700 font-semibold" onclick="alert('Fungsi Cabut Akses disiapkan!')">Cabut Akses</button>
+                </td>
+=======
         <tbody id="tabel-pengguna" class="text-gray-700">
             <tr>
                 <td colspan="4" class="text-center py-8 text-gray-400">Memuat data pengguna...</td>
+>>>>>>> f5f09724dc2df00cc30be900d0299641fb86156b
             </tr>
         </tbody>
     </table>

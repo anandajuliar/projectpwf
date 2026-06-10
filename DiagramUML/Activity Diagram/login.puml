@@ -15,7 +15,7 @@ start
 if (Data user ditemukan?) then (Tidak)
     |System|
     :Mengembalikan respon error;
-    :Menampilkan pesan "Email/Password Salah";
+    :Menampilkan pesan "Email atau Password Salah";
     |User|
     :Melihat pesan gagal;
     stop
@@ -24,7 +24,7 @@ else (Ya)
     :Generate Token;
     :Simpan sesi login;
     |User|
-    :Redirect ke halaman Dashboard/Dapur;
+    :Redirect ke halaman Dashboard;
     stop
 endif
 @enduml
