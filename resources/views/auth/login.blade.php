@@ -75,7 +75,7 @@
                             loginBtn.disabled = false;
                         }
                     } else {
-                        errorBox.innerHTML = "Ditolak Backend: " + (responBackend.message || "Email/Password salah!");
+                        errorBox.innerHTML = "Akses Ditolak! " + (responBackend.message || "Email/Password salah!");
                         errorBox.classList.remove('hidden');
                         loginBtn.innerHTML = 'Masuk Sistem';
                         loginBtn.disabled = false;
