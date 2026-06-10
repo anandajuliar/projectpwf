@@ -19,12 +19,13 @@ return new class extends Migration
             $table->string('category')->nullable()->comment('Kategori resep, misal: Kue Kering, Roti, Minuman');
             $table->unsignedSmallInteger('default_portions')->default(1)
                   ->comment('Jumlah porsi/loyang default dari resep ini');
-            $table->foreignId('created_by')
+            $table->foreignId('created_by')->nullable()
                   ->constrained('users')
-                  ->cascadeOnDelete()
-                  ->comment('Admin yang membuat resep');
+                  ->nullOnDelete()
+                  ->comment('Admin yang membuat resep (bisa null jika admin dihapus)');
             $table->boolean('is_active')->default(true)->comment('Resep aktif atau diarsipkan');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         // Tabel komposisi bahan per resep

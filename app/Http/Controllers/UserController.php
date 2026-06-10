@@ -54,6 +54,44 @@ class UserController extends Controller
             ],
         ], Response::HTTP_OK);
     }
+    
+    /**
+     * Membuat akun karyawan baru (Otomatis sebagai Chef).
+     *
+     * POST /api/users
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            // Validasi Nama: Wajib huruf (besar/kecil) dan spasi saja
+            'name'     => ['required', 'string', 'min:3', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
+            // Validasi Email: Standar email valid (huruf, angka, @, titik, dll)
+            'email'    => ['required', 'string','min:5', 'email:rfc,dns', 'max:255', 'unique:users,email'],
+            // Validasi Password: Minimal 8 karakter
+            'password' => ['required', 'string', 'min:8'],
+        ], [
+            'name.min'     => 'Nama karyawan minimal harus 3 huruf.',
+            'name.regex'   => 'Nama karyawan hanya boleh berisi huruf dan spasi.',
+            'email.min'    => 'Email minimal harus 5 karakter.',
+            'email.email'  => 'Format email tidak valid. Pastikan ada tanda @ dan titik (.).',
+            'email.unique' => 'Email ini sudah terdaftar di sistem. Gunakan email lain.',
+            'password.min' => 'Password minimal harus 8 karakter.',
+        ]);
+
+        $user = User::create([
+            'name'      => $validated['name'],
+            'email'     => $validated['email'],
+            'password'  => Hash::make($validated['password']),
+            'role'      => 'chef', 
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Akun staf dapur untuk {$user->name} berhasil dibuat.",
+            'data'    => new UserResource($user),
+        ], Response::HTTP_CREATED);
+    }
 
     /**
      * Menampilkan detail satu user.

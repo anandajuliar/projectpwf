@@ -14,7 +14,7 @@
 <div class="bg-white shadow-md rounded overflow-x-auto">
     <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
         <h3 class="font-bold text-gray-700">Daftar Pengguna Aktif</h3>
-        <button onclick="bukaModalChef()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded shadow transition">
+        <button onclick="bukaModalKaryawan()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded shadow transition">
             + Daftarkan Chef Baru
         </button>
     </div>
@@ -35,13 +35,15 @@
     </table>
 </div>
 
-{{-- Modal Tambah Chef --}}
-<div id="modalTambahChef" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
+{{-- Modal Tambah / Edit Karyawan --}}
+<div id="modalKaryawan" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
     <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
-        <h3 class="text-2xl font-bold text-gray-800 mb-1">Pendaftaran Chef Baru</h3>
-        <p class="text-sm text-gray-500 mb-6">Isi data berikut untuk membuat akun staf dapur baru.</p>
+        <h3 id="modal-title" class="text-2xl font-bold text-gray-800 mb-1">Pendaftaran Chef Baru</h3>
+        <p id="modal-desc" class="text-sm text-gray-500 mb-6">Isi data berikut untuk membuat akun staf dapur baru.</p>
 
-        <form id="formTambahChef" novalidate>
+        <form id="formKaryawan" novalidate>
+            <input type="hidden" id="edit-id" value="">
+            
             <div class="mb-4">
                 <label class="block text-sm font-bold text-gray-700 mb-2">Nama Lengkap</label>
                 <input id="input-nama" type="text"
@@ -55,28 +57,23 @@
                     placeholder="chef.juna@bakelab.com" required>
             </div>
             <div class="mb-6">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Password Sementara</label>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Password <span id="password-hint" class="text-red-500">*</span></label>
                 <input id="input-password" type="password"
                     class="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
-                    placeholder="Minimal 8 karakter" required>
-                <p class="text-xs text-gray-400 mt-1">Chef dapat mengubah password setelah login pertama.</p>
+                    placeholder="Minimal 8 karakter">
+                <p id="password-help" class="text-xs text-amber-600 mt-1 font-semibold hidden">
+                    *Kosongkan kolom ini jika tidak ingin mereset password karyawan.
+                </p>
             </div>
 
-            {{-- Pesan error inline --}}
             <div id="form-error" class="hidden mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3"></div>
 
             <div class="flex justify-end space-x-4 border-t pt-5">
-                <button type="button" onclick="tutupModalChef()"
-                    class="px-5 py-2 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">
-                    Batal
-                </button>
-                <button type="button" id="btn-buat-akun" onclick="submitBuatAkun()"
-                    class="px-5 py-2 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition shadow-md flex items-center gap-2">
-                    <svg id="icon-loading" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                    </svg>
-                    <span id="label-btn">Buat Akun</span>
+                <button type="button" onclick="tutupModalKaryawan()"
+                    class="px-5 py-2 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Batal</button>
+                <button type="button" id="btn-submit" onclick="submitKaryawan()"
+                    class="px-5 py-2 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition shadow-md">
+                    <span id="label-btn">Simpan Data</span>
                 </button>
             </div>
         </form>
@@ -137,116 +134,101 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // ===================================================================
-// KONTROL MODAL
+// KONTROL MODAL (TAMBAH / EDIT)
 // ===================================================================
-function bukaModalChef() {
-    document.getElementById('modalTambahChef').classList.remove('hidden');
+function bukaModalKaryawan(user = null) {
+    const modal = document.getElementById('modalKaryawan');
+    document.getElementById('formKaryawan').reset();
     document.getElementById('form-error').classList.add('hidden');
-    document.getElementById('formTambahChef').reset();
+    
+    if (user) {
+        // Mode Edit
+        document.getElementById('modal-title').innerText = 'Edit Data Karyawan';
+        document.getElementById('modal-desc').innerText = 'Perbarui data diri atau reset password karyawan.';
+        document.getElementById('edit-id').value = user.id;
+        document.getElementById('input-nama').value = user.name;
+        document.getElementById('input-email').value = user.email;
+        
+        document.getElementById('password-hint').innerText = '(Opsional)';
+        document.getElementById('password-help').classList.remove('hidden');
+    } else {
+        // Mode Tambah
+        document.getElementById('modal-title').innerText = 'Pendaftaran Chef Baru';
+        document.getElementById('modal-desc').innerText = 'Isi data berikut untuk membuat akun staf dapur baru.';
+        document.getElementById('edit-id').value = '';
+        
+        document.getElementById('password-hint').innerText = '*';
+        document.getElementById('password-help').classList.add('hidden');
+    }
+    modal.classList.remove('hidden');
 }
 
-function tutupModalChef() {
-    document.getElementById('modalTambahChef').classList.add('hidden');
-    document.getElementById('formTambahChef').reset();
-    document.getElementById('form-error').classList.add('hidden');
-    setLoadingBtn(false);
+function tutupModalKaryawan() {
+    document.getElementById('modalKaryawan').classList.add('hidden');
+    document.getElementById('btn-submit').disabled = false;
+    document.getElementById('label-btn').innerText = 'Simpan Data';
 }
 
 // ===================================================================
-// SET LOADING STATE TOMBOL
+// SUBMIT FORM (CREATE / UPDATE)
 // ===================================================================
-function setLoadingBtn(loading) {
-    const btn   = document.getElementById('btn-buat-akun');
-    const ikon  = document.getElementById('icon-loading');
-    const label = document.getElementById('label-btn');
-    btn.disabled    = loading;
-    ikon.classList.toggle('hidden', !loading);
-    label.textContent = loading ? 'Memproses...' : 'Buat Akun';
-}
-
-// ===================================================================
-// SUBMIT FORM → API /api/auth/register
-// ===================================================================
-async function submitBuatAkun() {
+async function submitKaryawan() {
+    const id       = document.getElementById('edit-id').value;
     const nama     = document.getElementById('input-nama').value.trim();
     const email    = document.getElementById('input-email').value.trim();
     const password = document.getElementById('input-password').value;
     const errorBox = document.getElementById('form-error');
 
-    // Validasi sisi klien
-    if (!nama || !email || !password) {
-        errorBox.textContent = 'Harap lengkapi semua kolom sebelum melanjutkan.';
+    if (!nama || !email) {
+        errorBox.textContent = 'Nama dan email wajib diisi.';
         errorBox.classList.remove('hidden');
         return;
     }
-    if (password.length < 8) {
-        errorBox.textContent = 'Password harus terdiri dari minimal 8 karakter.';
+    if (!id && password.length < 8) {
+        errorBox.textContent = 'Untuk akun baru, password wajib minimal 8 karakter.';
         errorBox.classList.remove('hidden');
         return;
     }
-    errorBox.classList.add('hidden');
 
     const token = localStorage.getItem('auth_token');
-    if (!token) {
-        tampilkanToast('Sesi Anda telah berakhir. Silakan login kembali.', 'error');
-        setTimeout(() => { window.location.href = '/login'; }, 1500);
-        return;
+    const isEdit = id !== '';
+    const endpoint = isEdit ? `/api/users/${id}` : '/api/users'; // Jika edit tembak PUT, jika tambah tembak POST
+    const method = isEdit ? 'PUT' : 'POST';
+
+    const payload = { name: nama, email: email };
+    
+    // Kirim password hanya jika diisi
+    if (password) {
+        payload.password = password;
+        payload.password_confirmation = password;
     }
 
-    setLoadingBtn(true);
+    errorBox.classList.add('hidden');
+    document.getElementById('btn-submit').disabled = true;
+    document.getElementById('label-btn').innerText = 'Memproses...';
 
     try {
-        const res = await fetch('/api/auth/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token,
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({
-                name: nama,
-                email: email,
-                password: password,
-                password_confirmation: password,
-                role: 'chef',
-            }),
+        const res = await fetch(endpoint, {
+            method: method,
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+            body: JSON.stringify(payload),
         });
-
         const json = await res.json();
 
         if (res.ok && json.success) {
-            tutupModalChef();
-            tampilkanToast(`Akun untuk ${nama} berhasil dibuat. Chef dapat langsung login.`, 'sukses');
-            muatDaftarPengguna(); // Refresh tabel
+            tutupModalKaryawan();
+            tampilkanToast(`Data ${nama} berhasil disimpan!`, 'sukses');
+            muatDaftarPengguna();
         } else {
-            // Tangani pesan error dari server secara ramah
-            let pesanError = 'Terjadi kendala saat membuat akun. Silakan coba lagi.';
-            if (json.errors) {
-                const pesanList = Object.values(json.errors).flat();
-                if (pesanList.length > 0) pesanError = pesanList[0];
-            } else if (json.message) {
-                // Terjemahkan pesan teknis ke bahasa umum
-                if (json.message.toLowerCase().includes('email') && json.message.toLowerCase().includes('taken')) {
-                    pesanError = 'Alamat email ini sudah terdaftar. Gunakan email lain.';
-                } else if (json.message.toLowerCase().includes('email') && json.message.toLowerCase().includes('unique')) {
-                    pesanError = 'Alamat email ini sudah digunakan. Gunakan email yang berbeda.';
-                } else if (res.status === 401 || res.status === 403) {
-                    pesanError = 'Anda tidak memiliki wewenang untuk melakukan tindakan ini.';
-                } else if (res.status === 422) {
-                    pesanError = 'Data yang dimasukkan tidak valid. Periksa kembali isian form.';
-                } else {
-                    pesanError = json.message;
-                }
-            }
-            errorBox.textContent = pesanError;
+            errorBox.textContent = json.message || 'Gagal menyimpan data.';
             errorBox.classList.remove('hidden');
         }
     } catch (err) {
-        errorBox.textContent = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+        errorBox.textContent = 'Koneksi ke server gagal.';
         errorBox.classList.remove('hidden');
-        console.error(err);
     } finally {
-        setLoadingBtn(false);
+        document.getElementById('btn-submit').disabled = false;
+        document.getElementById('label-btn').innerText = 'Simpan Data';
     }
 }
 
@@ -278,14 +260,13 @@ async function muatDaftarPengguna() {
                 : 'bg-amber-100 text-amber-800';
             const badgeLabel = isAdmin ? 'Admin Gudang' : 'Staf Dapur';
             const ikon = isAdmin ? '👨‍💼' : '👨‍🍳';
-            const aksi = isAdmin
-                ? '<td class="text-center py-3 px-4 text-gray-400 italic text-sm">Tidak bisa dihapus</td>'
-                : `<td class="text-center py-3 px-4">
-                       <button onclick="cabutAkses(${u.id}, '${escHtml(u.name)}')"
-                           class="text-red-500 hover:text-red-700 font-semibold text-sm transition">
-                           Cabut Akses
-                       </button>
-                   </td>`;
+            const isSelf = u.email === 'admin@pwf.com' || u.email === 'chef@bakelab.com'; 
+
+            const aksi = `
+                <td class="text-center py-3 px-4">
+                    <button onclick='bukaModalKaryawan(${JSON.stringify(u)})' class="text-blue-500 hover:text-blue-700 font-semibold text-sm mr-3 transition">Edit</button>
+                    ${isSelf ? '<span class="text-gray-400 italic text-sm">(Anda)</span>' : `<button onclick="cabutAkses(${u.id}, '${escHtml(u.name)}')" class="text-red-500 hover:text-red-700 font-semibold text-sm transition">Hapus</button>`}
+                </td>`;
 
             return `<tr class="border-b hover:bg-gray-50">
                 <td class="text-left py-3 px-4 flex items-center">

@@ -6,7 +6,6 @@ use App\Http\Requests\Recipe\ExecuteRecipeRequest;
 use App\Http\Requests\Recipe\StoreRecipeRequest;
 use App\Http\Requests\Recipe\UpdateRecipeRequest;
 use App\Http\Resources\RecipeResource;
-use App\Http\Resources\StockLogResource;
 use App\Models\Recipe;
 use App\Models\RecipeIngredient;
 use App\Models\StockLog;
@@ -14,30 +13,26 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable; // <-- INI PENTING BANGET BUAT NANGKEP ERROR
 
 class RecipeController extends Controller
 {
     /**
      * Menampilkan semua resep.
-     * Mendukung filter by category, status, dan search.
-     *
      * GET /api/recipes
      */
     public function index(Request $request): JsonResponse
     {
         $query = Recipe::with(['creator', 'ingredients.product'])->latest();
 
-        // Filter berdasarkan kategori
         if ($request->filled('category')) {
             $query->where('category', $request->category);
         }
 
-        // Filter hanya resep aktif
         if ($request->filled('is_active')) {
             $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
         }
 
-        // Pencarian berdasarkan nama
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
@@ -59,8 +54,6 @@ class RecipeController extends Controller
 
     /**
      * Membuat resep baru beserta bahan-bahannya.
-     * Hanya admin (dijaga middleware).
-     *
      * POST /api/recipes
      */
     public function store(StoreRecipeRequest $request): JsonResponse
@@ -75,7 +68,6 @@ class RecipeController extends Controller
                 'is_active'        => $request->input('is_active', true),
             ]);
 
-            // Simpan semua bahan resep
             $ingredients = collect($request->ingredients)->map(fn ($ing) => [
                 'recipe_id'       => $recipe->id,
                 'product_id'      => $ing['product_id'],
@@ -98,8 +90,7 @@ class RecipeController extends Controller
     }
 
     /**
-     * Menampilkan detail satu resep beserta bahan-bahan dan stok saat ini.
-     *
+     * Menampilkan detail satu resep.
      * GET /api/recipes/{id}
      */
     public function show(Recipe $recipe): JsonResponse
@@ -114,9 +105,7 @@ class RecipeController extends Controller
     }
 
     /**
-     * Memperbarui data resep dan komposisi bahannya.
-     * Hanya admin (dijaga middleware).
-     *
+     * Mengedit data resep dan komposisinya.
      * PUT /api/recipes/{id}
      */
     public function update(UpdateRecipeRequest $request, Recipe $recipe): JsonResponse
@@ -126,7 +115,6 @@ class RecipeController extends Controller
                 'name', 'description', 'category', 'default_portions', 'is_active',
             ]));
 
-            // Jika ada ingredients yang dikirim, replace seluruh komposisi
             if ($request->has('ingredients')) {
                 $recipe->ingredients()->delete();
 
@@ -152,13 +140,11 @@ class RecipeController extends Controller
 
     /**
      * Menghapus resep.
-     * Hanya admin (dijaga middleware).
-     *
      * DELETE /api/recipes/{id}
      */
     public function destroy(Recipe $recipe): JsonResponse
     {
-        $recipe->delete(); // ingredients terhapus via cascadeOnDelete
+        $recipe->delete(); 
 
         return response()->json([
             'success' => true,
@@ -170,113 +156,108 @@ class RecipeController extends Controller
      * =====================================================================
      * ENDPOINT UTAMA: Eksekusi Resep — Potong Stok Otomatis
      * =====================================================================
-     * Memotong stok semua bahan baku sesuai komposisi resep × jumlah porsi
-     * dalam satu transaksi atomik. Jika satu bahan saja tidak cukup,
-     * seluruh operasi dibatalkan (rollback).
-     *
-     * POST /api/recipes/{id}/execute
-     *
-     * Request body:
-     *   - portions (required) : jumlah porsi/loyang yang akan dibuat
-     *   - note     (optional) : catatan produksi
      */
     public function execute(ExecuteRecipeRequest $request, Recipe $recipe): JsonResponse
     {
-        if (! $recipe->is_active) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Resep ini tidak aktif dan tidak bisa dieksekusi.',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $portions    = $request->portions;
-        $note        = $request->note;
-        $ingredients = $recipe->ingredients()->with('product')->get();
-
-        if ($ingredients->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Resep ini belum memiliki bahan baku.',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        // Validasi stok semua bahan SEBELUM memotong (fail-fast)
-        $insufficientItems = [];
-        foreach ($ingredients as $ingredient) {
-            $product  = $ingredient->product;
-            $required = $ingredient->qty_per_portion * $portions;
-
-            if (! $product || $product->qty < $required) {
-                $insufficientItems[] = [
-                    'product_id'    => $ingredient->product_id,
-                    'product_name'  => $product?->name ?? '(dihapus)',
-                    'unit'          => $product?->unit ?? '-',
-                    'required'      => (float) $required,
-                    'available'     => (float) ($product?->qty ?? 0),
-                    'shortage'      => (float) max(0, $required - ($product?->qty ?? 0)),
-                ];
+        try {
+            if (! $recipe->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Resep ini tidak aktif dan tidak bisa dieksekusi.',
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
-        }
 
-        if (! empty($insufficientItems)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Stok tidak mencukupi untuk membuat ' . $portions . ' porsi "' . $recipe->name . '".',
-                'data'    => [
-                    'insufficient_items' => $insufficientItems,
-                ],
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
+            $portions    = $request->portions;
+            $note        = $request->note;
+            $ingredients = $recipe->ingredients()->with('product')->get();
 
-        // Potong stok semua bahan dalam satu transaksi
-        $reducedItems = DB::transaction(function () use ($ingredients, $portions, $note, $recipe, $request) {
-            $results = [];
+            if ($ingredients->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Resep ini belum memiliki bahan baku.',
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
 
+            $insufficientItems = [];
             foreach ($ingredients as $ingredient) {
                 $product  = $ingredient->product;
                 $required = $ingredient->qty_per_portion * $portions;
 
-                $previousQty = (float) $product->qty;
-                $product->decrement('qty', $required);
-                $product->refresh();
-
-                // Catat ke stock_logs
-                StockLog::create([
-                    'product_id'  => $product->id,
-                    'user_id'     => $request->user()->id,
-                    'type'        => 'recipe_reduce',
-                    'qty_before'  => $previousQty,
-                    'qty_changed' => $required,
-                    'qty_after'   => (float) $product->qty,
-                    'unit'        => $product->unit,
-                    'recipe_id'   => $recipe->id,
-                    'portions'    => $portions,
-                    'note'        => $note,
-                ]);
-
-                $results[] = [
-                    'product_id'    => $product->id,
-                    'product_name'  => $product->name,
-                    'unit'          => $product->unit,
-                    'qty_used'      => (float) $required,
-                    'qty_before'    => $previousQty,
-                    'qty_after'     => (float) $product->qty,
-                    'stock_status'  => $product->stock_status,
-                ];
+                if (! $product || $product->qty < $required) {
+                    $insufficientItems[] = [
+                        'product_id'   => $ingredient->product_id,
+                        'product_name' => $product?->name ?? '(dihapus)',
+                        'unit'         => $product?->unit ?? '-',
+                        'required'     => (float) $required,
+                        'available'    => (float) ($product?->qty ?? 0),
+                        'shortage'     => (float) max(0, $required - ($product?->qty ?? 0)),
+                    ];
+                }
             }
 
-            return $results;
-        });
+            if (! empty($insufficientItems)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stok tidak mencukupi untuk membuat ' . $portions . ' porsi "' . $recipe->name . '".',
+                    'data'    => [
+                        'insufficient_items' => $insufficientItems,
+                    ],
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
 
-        return response()->json([
-            'success' => true,
-            'message' => "Berhasil membuat {$portions} porsi \"{$recipe->name}\". Stok semua bahan telah dikurangi.",
-            'data'    => [
-                'recipe'    => ['id' => $recipe->id, 'name' => $recipe->name],
-                'portions'  => $portions,
-                'note'      => $note,
-                'items_reduced' => $reducedItems,
-            ],
-        ], Response::HTTP_OK);
+            $reducedItems = DB::transaction(function () use ($ingredients, $portions, $note, $recipe, $request) {
+                $results = [];
+
+                foreach ($ingredients as $ingredient) {
+                    $product  = $ingredient->product;
+                    $required = $ingredient->qty_per_portion * $portions;
+
+                    $previousQty = (float) $product->qty;
+                    $product->decrement('qty', $required);
+                    $product->refresh();
+
+                    StockLog::create([
+                        'product_id'  => $product->id,
+                        'user_id'     => $request->user()->id,
+                        'type'        => 'recipe_reduce',
+                        'qty_before'  => $previousQty,
+                        'qty_changed' => $required,
+                        'qty_after'   => (float) $product->qty,
+                        'unit'        => $product->unit,
+                        'recipe_id'   => $recipe->id,
+                        'portions'    => $portions,
+                        'note'        => $note,
+                    ]);
+
+                    $results[] = [
+                        'product_id'   => $product->id,
+                        'product_name' => $product->name,
+                        'unit'         => $product->unit,
+                        'qty_used'     => (float) $required,
+                        'qty_before'   => $previousQty,
+                        'qty_after'    => (float) $product->qty,
+                    ];
+                }
+
+                return $results;
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil membuat {$portions} porsi \"{$recipe->name}\". Stok semua bahan telah dikurangi.",
+                'data'    => [
+                    'recipe'        => ['id' => $recipe->id, 'name' => $recipe->name],
+                    'portions'      => $portions,
+                    'note'          => $note,
+                    'items_reduced' => $reducedItems,
+                ],
+            ], Response::HTTP_OK);
+
+        } catch (Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => "ERROR ASLI (Kirim ke AI): " . $e->getMessage() . " di baris " . $e->getLine(),
+            ], 500);
+        }
     }
 }

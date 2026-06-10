@@ -22,13 +22,12 @@ class StoreRecipeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'             => ['required', 'string', 'max:255'],
+            'name'             => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9\s\(\)\'\&\-\/\,\.]+$/'],
             'description'      => ['nullable', 'string'],
             'category'         => ['nullable', 'string', 'max:100'],
             'default_portions' => ['required', 'integer', 'min:1'],
             'is_active'        => ['sometimes', 'boolean'],
 
-            // Array bahan-bahan resep
             'ingredients'                  => ['required', 'array', 'min:1'],
             'ingredients.*.product_id'     => ['required', 'integer', 'exists:products,id'],
             'ingredients.*.qty_per_portion'=> ['required', 'numeric', 'min:0.01'],
@@ -36,23 +35,19 @@ class StoreRecipeRequest extends FormRequest
         ];
     }
 
-    /**
-     * Custom validation messages in Bahasa Indonesia.
-     *
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return [
-            'name.required'                        => 'Nama resep wajib diisi.',
-            'default_portions.required'            => 'Jumlah porsi default wajib diisi.',
-            'default_portions.min'                 => 'Jumlah porsi minimal 1.',
-            'ingredients.required'                 => 'Resep harus memiliki setidaknya 1 bahan.',
-            'ingredients.min'                      => 'Resep harus memiliki setidaknya 1 bahan.',
-            'ingredients.*.product_id.required'    => 'ID bahan baku wajib diisi.',
-            'ingredients.*.product_id.exists'      => 'Bahan baku tidak ditemukan.',
+            'name.required'                    => 'Nama resep wajib diisi.',
+            'name.regex'                       => 'Nama resep hanya boleh berisi huruf, angka, spasi, dan simbol ( ) \' & - / , .',
+            'default_portions.required'        => 'Jumlah porsi default wajib diisi.',
+            'default_portions.min'             => 'Jumlah porsi minimal 1.',
+            'ingredients.required'             => 'Resep harus memiliki setidaknya 1 bahan.',
+            'ingredients.min'                  => 'Resep harus memiliki setidaknya 1 bahan.',
+            'ingredients.*.product_id.required'=> 'ID bahan baku wajib diisi.',
+            'ingredients.*.product_id.exists'  => 'Bahan baku tidak ditemukan.',
             'ingredients.*.qty_per_portion.required'=> 'Jumlah bahan per porsi wajib diisi.',
-            'ingredients.*.qty_per_portion.min'    => 'Jumlah bahan per porsi harus lebih dari 0.',
+            'ingredients.*.qty_per_portion.min'=> 'Jumlah bahan per porsi harus lebih dari 0.',
         ];
     }
 }

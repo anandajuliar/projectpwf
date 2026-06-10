@@ -32,10 +32,13 @@ class StockLogResource extends JsonResource
             'qty_changed' => (float) $this->qty_changed,
             'qty_after'   => (float) $this->qty_after,
             'unit'        => $this->unit,
+            
+            'recipe_id'   => $this->recipe_id, 
+            'portions'    => $this->portions,  
+
             'recipe'      => $this->when($this->recipe_id !== null, [
                 'id'       => $this->recipe?->id,
                 'name'     => $this->recipe?->name,
-                'portions' => $this->portions,
             ]),
             'note'        => $this->note,
             'created_at'  => $this->created_at?->toDateTimeString(),

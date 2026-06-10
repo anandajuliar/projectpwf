@@ -7,50 +7,42 @@ use Illuminate\Validation\Rule;
 
 class UpdateUserRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return true;
+        return true; 
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         $userId = $this->route('user')?->id;
 
         return [
-            'name'     => ['sometimes', 'string', 'max:255'],
+            // Validasi Nama: Huruf & Spasi
+            'name'     => ['sometimes', 'string', 'min:3', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
+            // Validasi Email: Menghindari duplikat kecuali milik user ini sendiri
             'email'    => [
                 'sometimes',
-                'email',
+                'string',
+                'min:5',
+                'email:rfc,dns',
                 Rule::unique('users', 'email')->ignore($userId),
             ],
-            'password' => ['sometimes', 'string', 'min:8', 'confirmed'],
+            // Validasi Password: Minimal 8 karakter
+            'password' => ['sometimes', 'string', 'min:8'],
             'role'     => ['sometimes', 'in:admin,chef'],
             'is_active'=> ['sometimes', 'boolean'],
         ];
     }
 
-    /**
-     * Custom validation messages in Bahasa Indonesia.
-     *
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return [
-            'name.max'          => 'Nama maksimal 255 karakter.',
-            'email.email'       => 'Format email tidak valid.',
-            'email.unique'      => 'Email sudah digunakan oleh user lain.',
-            'password.min'      => 'Password minimal 8 karakter.',
-            'password.confirmed'=> 'Konfirmasi password tidak cocok.',
-            'role.in'           => 'Role harus admin atau chef.',
+            'name.min'     => 'Nama karyawan minimal harus 3 huruf.',
+            'name.regex'   => 'Nama karyawan hanya boleh berisi huruf dan spasi.',
+            'email.min'    => 'Email minimal harus 5 karakter.',
+            'email.email'  => 'Format email tidak valid. Pastikan ada tanda @ dan titik (.).',
+            'email.unique' => 'Email ini sudah digunakan oleh pengguna lain.',
+            'password.min' => 'Password baru minimal harus 8 karakter.',
         ];
     }
 }

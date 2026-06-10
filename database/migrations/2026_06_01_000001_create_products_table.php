@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+
 return new class extends Migration
 {
     /**
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->decimal('min_qty', 10, 2)->default(0)->comment('Batas stok minimum (trigger peringatan)');
             $table->decimal('price_per_unit', 15, 2)->default(0)->comment('Harga per satuan');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

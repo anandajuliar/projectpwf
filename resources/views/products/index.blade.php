@@ -168,7 +168,7 @@
                     <label class="block text-sm font-bold text-gray-700 mb-2">Harga Beli per Satuan (Rp) <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <span class="absolute left-4 top-3 text-gray-500 font-bold">Rp</span>
-                        <input type="number" step="0.01" id="inputHarga" class="w-full p-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500" placeholder="Misal: 15000" min="0" required>
+                        <input type="text" inputmode="numeric" id="inputHarga" class="w-full p-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500" placeholder="Misal: 15.000" required>
                     </div>
                 </div>
 
@@ -269,7 +269,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const desc  = document.getElementById('page-desc');
 
     if (userRole === 'admin') {
-        title.innerText = 'Manajemen Master Gudang';
+        title.innerText = 'Manajemen Gudang';
         desc.innerText  = 'Kontrol penuh data bahan baku dan inventaris.';
         document.getElementById('admin-view').classList.remove('hidden');
     } else {
@@ -571,12 +571,21 @@ function bukaModalEdit(product) {
     document.getElementById('modal-tambah-judul').innerText = 'Edit Bahan Baku';
     document.getElementById('editProductId').value  = product.id;
     document.getElementById('inputNama').value      = product.name;
-    document.getElementById('inputKategori').value  = product.category || '';
+    
+    const catSelect = document.getElementById('inputKategori');
+    if (product.category && !Array.from(catSelect.options).some(opt => opt.value === product.category)) {
+        catSelect.add(new Option(product.category, product.category));
+    }
+    catSelect.value = product.category || '';
+    
     document.getElementById('inputUnit').value      = product.unit;
-    document.getElementById('inputQty').value       = product.qty;
-    document.getElementById('inputMinQty').value    = product.min_qty;
-    document.getElementById('inputHarga').value     = product.price_per_unit;
+    document.getElementById('inputQty').value       = Math.abs(parseFloat(product.qty));
+    document.getElementById('inputMinQty').value    = Math.abs(parseFloat(product.min_qty));
+    
+    let hargaAsli = Math.abs(parseFloat(product.price_per_unit));
+    document.getElementById('inputHarga').value     = new Intl.NumberFormat('id-ID').format(hargaAsli);
     document.getElementById('inputDeskripsi').value = product.description || '';
+    
     document.getElementById('form-error').classList.add('hidden');
     document.getElementById('btn-simpan').innerText = 'Simpan Perubahan';
     document.getElementById('modalTambahBahan').classList.remove('hidden');
@@ -593,18 +602,34 @@ async function simpanProduk() {
     const errEl    = document.getElementById('form-error');
     const btn      = document.getElementById('btn-simpan');
 
+    const rawQty   = parseFloat(document.getElementById('inputQty').value);
+    const rawMin   = parseFloat(document.getElementById('inputMinQty').value);
+    
+    const cleanHargaStr = document.getElementById('inputHarga').value.replace(/\./g, '');
+    const rawHarga      = parseFloat(cleanHargaStr);
+
     const payload = {
         name          : document.getElementById('inputNama').value.trim(),
         category      : document.getElementById('inputKategori').value || null,
         unit          : document.getElementById('inputUnit').value,
-        qty           : parseFloat(document.getElementById('inputQty').value),
-        min_qty       : parseFloat(document.getElementById('inputMinQty').value),
-        price_per_unit: parseFloat(document.getElementById('inputHarga').value),
+        qty           : isNaN(rawQty) ? 0 : Math.abs(rawQty),
+        min_qty       : isNaN(rawMin) ? 0 : Math.abs(rawMin),
+        price_per_unit: isNaN(rawHarga) ? 0 : Math.abs(rawHarga),
         description   : document.getElementById('inputDeskripsi').value.trim() || null,
     };
 
-    if (!payload.name || isNaN(payload.qty) || isNaN(payload.min_qty) || isNaN(payload.price_per_unit)) {
-        errEl.innerText = 'Mohon isi semua field yang wajib diisi.';
+    if (!payload.name) {
+        errEl.innerText = 'Nama bahan wajib diisi.';
+        errEl.classList.remove('hidden');
+        return;
+    }
+    if (!/^[a-zA-Z0-9\s\(\)\'\&\-]+$/.test(payload.name)) {
+        errEl.innerText = "Nama bahan hanya boleh berisi huruf, angka, spasi, dan simbol ( ) ' & -";
+        errEl.classList.remove('hidden');
+        return;
+    }
+    if (payload.price_per_unit < 3000) {
+        errEl.innerText = 'Harga beli per satuan tidak boleh di bawah Rp 3.000.';
         errEl.classList.remove('hidden');
         return;
     }
@@ -703,5 +728,16 @@ function escHtml(str) {
 function formatAngka(num) {
     return parseFloat(num).toLocaleString('id-ID');
 }
+
+document.getElementById('inputHarga').addEventListener('input', function(e) {
+    let angka = this.value.replace(/[^0-9]/g, '');
+    
+    if (angka === '') {
+        this.value = '';
+        return;
+    }
+    
+    this.value = new Intl.NumberFormat('id-ID').format(angka);
+});
 </script>
 @endsection

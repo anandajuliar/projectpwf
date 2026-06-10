@@ -104,9 +104,12 @@ Route::middleware('auth:sanctum')->group(function () {
 // =====================================================================
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    Route::post('/users',                      [UserController::class, 'store'])->name('users.store');
     Route::get('/users',                       [UserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}',                [UserController::class, 'show'])->name('users.show');
     Route::put('/users/{user}',                [UserController::class, 'update'])->name('users.update');
     Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
     Route::delete('/users/{user}',             [UserController::class, 'destroy'])->name('users.destroy');
 });
+
+

@@ -22,13 +22,12 @@ class UpdateRecipeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'             => ['sometimes', 'string', 'max:255'],
+            'name'             => ['sometimes', 'string', 'max:255', 'regex:/^[a-zA-Z0-9\s\(\)\'\&\-\/\,\.]+$/'],
             'description'      => ['nullable', 'string'],
             'category'         => ['nullable', 'string', 'max:100'],
             'default_portions' => ['sometimes', 'integer', 'min:1'],
             'is_active'        => ['sometimes', 'boolean'],
 
-            // Mengganti seluruh komposisi bahan (opsional)
             'ingredients'                  => ['sometimes', 'array', 'min:1'],
             'ingredients.*.product_id'     => ['required_with:ingredients', 'integer', 'exists:products,id'],
             'ingredients.*.qty_per_portion'=> ['required_with:ingredients', 'numeric', 'min:0.01'],
@@ -36,14 +35,10 @@ class UpdateRecipeRequest extends FormRequest
         ];
     }
 
-    /**
-     * Custom validation messages in Bahasa Indonesia.
-     *
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return [
+            'name.regex'                           => 'Nama resep hanya boleh berisi huruf, angka, spasi, dan simbol ( ) \' & - / , .',
             'default_portions.min'                 => 'Jumlah porsi minimal 1.',
             'ingredients.min'                      => 'Resep harus memiliki setidaknya 1 bahan.',
             'ingredients.*.product_id.exists'      => 'Bahan baku tidak ditemukan.',
