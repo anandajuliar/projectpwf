@@ -1,0 +1,41 @@
+@startuml
+actor Admin
+boundary "Master Gudang View" as UI
+control "JavaScript Fetch Engine" as JS
+control "ProductController" as BE
+database "Database (MySQL)" as DB
+
+Admin -> UI : Klik "+ Tambah Bahan Baku"
+activate UI
+UI -> JS : openAddProductModal()
+activate JS
+JS --> UI : Tampilkan Form Modal "Tambah Bahan Baku"
+deactivate JS
+
+Admin -> UI : Isi Nama Bahan, Kategori, Satuan, Stok Awal,\nBatas Stok Minimum, & Harga Beli per Satuan
+Admin -> UI : Klik Tombol "Simpan"
+
+UI -> JS : storeProduct()
+activate JS
+
+JS -> BE : POST /api/products (form_data)
+activate BE
+
+BE -> BE : Validasi tipe data (qty & price harus numerik)
+BE -> DB : INSERT INTO products VALUES (...)
+activate DB
+DB --> BE : Query OK
+deactivate DB
+
+BE --> JS : Return JSON {success: true, message: "Produk berhasil ditambahkan"}
+deactivate BE
+
+JS -> UI : tutupModal()
+JS -> UI : tampilToast('success', message)
+UI --> Admin : Muncul Toast OREN Sukses di Gudang
+
+JS -> JS : fetchProducts() (Perbarui isi tabel tanpa reload)
+JS -> UI : Render ulang baris tabel produk terbaru
+deactivate JS
+deactivate UI
+@enduml

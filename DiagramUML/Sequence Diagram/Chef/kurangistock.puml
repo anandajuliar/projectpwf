@@ -1,0 +1,39 @@
+@startuml
+actor Chef
+boundary "Halaman Gudang (Blade)" as UI
+control "JavaScript (Fetch API)" as JS
+control "Product Controller (Laravel)" as BE
+database "Database (MySQL)" as DB
+
+Chef -> UI : Klik "Gunakan Bahan"
+UI -> JS : bukaModalGunakanBahan()
+activate JS
+JS --> UI : Tampilkan Modal Form
+deactivate JS
+
+Chef -> UI : Input Jumlah Pemakaian (Gram/Ml)
+Chef -> UI : Klik "Potong Stok"
+activate UI
+
+UI -> JS : kurangiStok(id, qty)
+activate JS
+
+JS -> BE : POST /api/products/{id}/reduce\n[Auth: Bearer Token, Body: qty]
+activate BE
+
+BE -> DB : Update qty = qty - input
+activate DB
+DB --> BE : Update Berhasil
+deactivate DB
+
+BE --> JS : Return JSON (success: true)
+deactivate BE
+
+JS -> UI : tampilToast('success', pesan)
+UI --> Chef : Muncul Toast OREN (Bawah Kanan)
+
+JS -> JS : fetchProducts() (Update kartu stok)
+JS -> UI : Render sisa stok terbaru di kartu
+deactivate JS
+deactivate UI
+@enduml

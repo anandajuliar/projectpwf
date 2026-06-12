@@ -1,0 +1,52 @@
+@startuml
+actor Admin
+boundary "Manajemen Karyawan View" as UI
+control "JavaScript Fetch Engine" as JS
+control "UserController (Backend)" as BE
+database "Database (MySQL)" as DB
+
+Admin -> UI : Klik "+ Daftarkan Chef Baru"
+activate UI
+UI -> JS : openRegistrationModal()
+activate JS
+JS --> UI : Tampilkan Modal Form Pendaftaran Karyawan
+deactivate JS
+
+Admin -> UI : Input Nama Lengkap, Alamat Email, & Password
+Admin -> UI : Klik "Simpan Data"
+
+UI -> JS : registerChef()
+activate JS
+JS -> JS : Validasi client-side (Password min 8 karakter)
+
+JS -> BE : POST /api/users (name, email, password, role: 'chef')
+activate BE
+
+BE -> BE : Validasi unique email & hashing password
+BE -> DB : INSERT INTO users VALUES (...)
+activate DB
+DB --> BE : Query OK / Row Inserted
+deactivate DB
+
+BE --> JS : Return JSON {success: true, message: "Pendaftaran sukses"}
+deactivate BE
+
+JS -> UI : tutupModal()
+JS -> UI : tampilToast('success', message)
+UI --> Admin : Muncul Toast OREN Sukses di Bawah Kanan
+
+JS -> JS : fetchUsers() (Ambil ulang data terupdate)
+JS -> BE : GET /api/users
+activate BE
+BE -> DB : SELECT * FROM users WHERE is_active = true
+activate DB
+DB --> BE : Record Users Terbaru
+deactivate DB
+BE --> JS : JSON Data Users
+deactivate BE
+
+JS -> UI : renderUserTable()
+UI --> Admin : Baris "Chef Budi" Baru Muncul di Tabel
+deactivate JS
+deactivate UI
+@enduml

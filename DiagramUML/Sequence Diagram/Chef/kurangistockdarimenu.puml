@@ -1,0 +1,42 @@
+@startuml
+actor Chef
+boundary "Halaman Dapur (Blade)" as UI
+control "JavaScript (Fetch API)" as JS
+control "Recipe Controller (Laravel)" as BE
+database "Database (MySQL)" as DB
+
+Chef -> UI : Klik Kartu Resep (cth: Baguette)
+activate UI
+
+UI -> JS : bukaResep(id)
+activate JS
+JS -> BE : GET /api/recipes/{id}
+BE -> DB : Query detail resep & komposisi
+DB --> BE : Data Resep & Bahan
+BE --> JS : JSON Data
+JS --> UI : Tampilkan Modal Detail & Bahan
+deactivate JS
+
+Chef -> UI : Klik "Mulai Produksi"
+activate JS
+
+JS -> BE : POST /api/recipes/{id}/execute\n[Body: portions]
+activate BE
+
+BE -> DB : Start Transaction: Kurangi stok semua bahan terkait
+activate DB
+DB --> BE : Commit Transaction (Success)
+deactivate DB
+
+BE --> JS : Return JSON (success: true, message)
+deactivate BE
+
+JS -> UI : tutupResep()
+JS -> UI : tampilToast('success', message)
+UI --> Chef : Muncul Toast OREN Sukses
+
+JS -> JS : window.location.reload() (Jeda 1.5 detik)
+deactivate JS
+UI --> Chef : Halaman Refresh (Stok Terupdate)
+deactivate UI
+@enduml

@@ -1,0 +1,34 @@
+@startuml
+actor Admin
+boundary "Dashboard View (Blade)" as UI
+control "JavaScript Fetch Engine" as JS
+control "DashboardController" as BE
+database "Database (MySQL)" as DB
+
+Admin -> UI : Membuka Halaman Dashboard
+activate UI
+
+UI -> JS : loadDashboardData()
+activate JS
+
+JS -> BE : GET /api/dashboard/stats\n[Headers: Bearer Token]
+activate BE
+
+BE -> DB : Count total record bahan baku
+activate DB
+DB --> BE : Total Variasi Bahan (cth: 15)
+deactivate DB
+
+BE -> DB : Query data qty < min_stock
+activate DB
+DB --> BE : Jumlah Item Rendah / Habis
+deactivate DB
+
+BE --> JS : Return JSON {success: true, data: {total: 15, low: 0, critical: 0}}
+deactivate BE
+
+JS -> UI : Update angka komponen widget metrik
+UI --> Admin : Tampilan 3 Kotak Ringkasan & Status Aman Muncul
+deactivate JS
+deactivate UI
+@enduml

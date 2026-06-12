@@ -1,0 +1,49 @@
+@startuml
+actor Admin
+boundary "Dapur Produksi View" as UI
+control "JavaScript Fetch Engine" as JS
+control "RecipeController" as BE
+database "Database (MySQL)" as DB
+
+Admin -> UI : Klik "+ Buat Resep Baru"
+activate UI
+UI -> JS : openCreateRecipeModal()
+activate JS
+JS --> UI : Tampilkan Form Modal Resep Kosong
+deactivate JS
+
+Admin -> UI : Input Nama Resep, Kategori, Default Porsi, & Waktu Persiapan
+Admin -> UI : Klik "+ Tambah Bahan" -> Pilih Bahan Baku & Input Jumlah Kebutuhan
+Admin -> UI : Klik "Simpan Resep Baru"
+
+UI -> JS : storeRecipe()
+activate JS
+
+JS -> BE : POST /api/recipes (recipe_data + ingredients_array)
+activate BE
+
+BE -> BE : Validasi field wajib resep
+BE -> DB : INSERT INTO recipes (Simpan info utama resep)
+activate DB
+DB --> BE : Return recipe_id
+deactivate DB
+
+loop Tiap Item Bahan Baku di Dalam Array Komposisi
+    BE -> DB : INSERT INTO recipe_ingredients (recipe_id, product_id, qty_per_portion)
+    activate DB
+    DB --> BE : Query OK
+    deactivate DB
+end
+
+BE --> JS : Return JSON {success: true, message: "Resep Berhasil Dibuat"}
+deactivate BE
+
+JS -> UI : tutupModal()
+JS -> UI : tampilToast('success', message)
+UI --> Admin : Muncul Toast OREN Sukses di Dapur
+
+JS -> JS : muatResep() (Refresh data kartu)
+JS -> UI : Render ulang kartu resep baru di halaman utama
+deactivate JS
+deactivate UI
+@enduml
