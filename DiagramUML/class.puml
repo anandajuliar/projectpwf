@@ -22,6 +22,12 @@ enum Role {
     chef
 }
 
+enum StockType {
+    reduce
+    add
+    recipe_reduce
+}
+
 ' ============================================================
 ' MODEL CLASSES
 ' ============================================================
@@ -43,6 +49,13 @@ class User {
     + scopeChef(query) : Builder
 }
 
+class Category {
+    + id : int
+    + name : string
+    + created_at : datetime
+    + updated_at : datetime
+}
+
 class Product {
     + id : int
     + name : string
@@ -52,9 +65,11 @@ class Product {
     + qty : decimal
     + min_qty : decimal
     + price_per_unit : decimal
+    + deleted_at : datetime
     + created_at : datetime
     + updated_at : datetime
     --
+    + stockLogs() : HasMany
     + getStockStatusAttribute() : string
     + scopeOutOfStock(query) : Builder
     + scopeLowStock(query) : Builder
@@ -69,9 +84,13 @@ class Recipe {
     + default_portions : int
     + created_by : int <<FK>>
     + is_active : boolean
+    + deleted_at : datetime
     + created_at : datetime
     + updated_at : datetime
     --
+    + creator() : BelongsTo
+    + ingredients() : HasMany
+    + products() : BelongsToMany
     + getCostPerPortionAttribute() : float
     + scopeActive(query) : Builder
 }
@@ -82,14 +101,17 @@ class RecipeIngredient {
     + product_id : int <<FK>>
     + qty_per_portion : decimal
     + note : string
+    --
+    + recipe() : BelongsTo
+    + product() : BelongsTo
 }
 
 class StockLog {
     + id : int
     + product_id : int <<FK>>
-    + user_id : int <<FK>>
+    + user_id : int <<FK, nullable>>
     + recipe_id : int <<FK, nullable>>
-    + type : string
+    + type : StockType
     + qty_before : decimal
     + qty_changed : decimal
     + qty_after : decimal
@@ -99,6 +121,9 @@ class StockLog {
     + created_at : datetime
     + updated_at : datetime
     --
+    + product() : BelongsTo
+    + user() : BelongsTo
+    + recipe() : BelongsTo
     + scopeOfType(query, type) : Builder
     + scopeForProduct(query, productId) : Builder
     + scopeByUser(query, userId) : Builder
@@ -118,7 +143,8 @@ class AuthController {
 
 class UserController {
     + index(request) : JsonResponse
-    + show(request, user) : JsonResponse
+    + store(request) : JsonResponse
+    + show(user) : JsonResponse
     + update(request, user) : JsonResponse
     + toggleActive(request, user) : JsonResponse
     + destroy(request, user) : JsonResponse
@@ -150,6 +176,13 @@ class StockLogController {
     + show(stockLog) : JsonResponse
 }
 
+class CategoryController {
+    + index() : JsonResponse
+    + store(request) : JsonResponse
+    + update(request, id) : JsonResponse
+    + destroy(id) : JsonResponse
+}
+
 ' ============================================================
 ' RELASI ANTAR MODEL
 ' ============================================================
@@ -173,11 +206,13 @@ RecipeController ..> Recipe         : <<manages>>
 RecipeController ..> RecipeIngredient : <<manages>>
 RecipeController ..> StockLog       : <<creates>>
 StockLogController ..> StockLog     : <<reads>>
+CategoryController ..> Category     : <<manages>>
 
 ' ============================================================
 ' ENUM RELASI
 ' ============================================================
 
 User --> Role : has
+StockLog --> StockType : typed as
 
 @enduml
