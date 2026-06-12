@@ -1,4 +1,4 @@
-@startuml
+@startuml kelolamenu
 actor Admin
 boundary "Dapur Produksi View" as UI
 control "JavaScript Fetch Engine" as JS

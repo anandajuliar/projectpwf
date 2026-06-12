@@ -1,0 +1,34 @@
+@startuml eksekusiResep Chef
+|Chef|
+start
+:Membuka halaman Daftar Resep;
+:Memilih Resep dan klik "Eksekusi";
+:Menginput jumlah porsi yang akan dibuat;
+:Klik tombol "Konfirmasi";
+
+|System|
+:Menerima request eksekusi resep;
+:Menghitung total kebutuhan bahan\n(qty_per_portion * jumlah porsi);
+
+|Database|
+:Mengecek stok ketersediaan di tabel Products;
+
+|System|
+if (Stok semua bahan mencukupi?) then (Tidak)
+    :Mengembalikan pesan error\n"Stok bahan tidak cukup";
+    |Chef|
+    :Melihat notifikasi error;
+    stop
+else (Ya)
+    |System|
+    :Mengurangi qty pada tabel Products;
+    :Mencatat riwayat ke tabel Stock_Logs\n(type: recipe_reduce);
+    |Database|
+    :Menyimpan perubahan data;
+    |System|
+    :Menampilkan pesan "Resep berhasil dieksekusi";
+    |Chef|
+    :Melihat notifikasi sukses;
+    stop
+endif
+@enduml

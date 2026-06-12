@@ -1,4 +1,4 @@
-@startuml
+@startuml Kurangi Stok dari Menu
 actor Chef
 boundary "Halaman Dapur (Blade)" as UI
 control "JavaScript (Fetch API)" as JS
@@ -17,26 +17,42 @@ BE --> JS : JSON Data
 JS --> UI : Tampilkan Modal Detail & Bahan
 deactivate JS
 
+Chef -> UI : Input Jumlah Porsi
 Chef -> UI : Klik "Mulai Produksi"
 activate JS
 
 JS -> BE : POST /api/recipes/{id}/execute\n[Body: portions]
 activate BE
 
-BE -> DB : Start Transaction: Kurangi stok semua bahan terkait
+BE -> DB : Cek ketersediaan stok semua bahan terkait
 activate DB
-DB --> BE : Commit Transaction (Success)
+DB --> BE : Hasil Cek Stok
 deactivate DB
 
-BE --> JS : Return JSON (success: true, message)
+alt Ada bahan yang kurang
+    BE --> JS : Return JSON Error (Stok bahan X tidak cukup)
+    JS -> UI : tampilToast('error', pesan)
+else Semua bahan cukup
+    BE -> DB : Start Transaction
+    activate DB
+    
+    DB -> DB : Update qty di tabel products\n(Kurangi sesuai takaran)
+    DB -> DB : Insert ke tabel stock_logs\n(type: 'recipe_reduce', untuk tiap bahan)
+    
+    DB --> BE : Commit Transaction (Success)
+    deactivate DB
+
+    BE --> JS : Return JSON (success: true, message)
+    
+    JS -> UI : tutupResep()
+    JS -> UI : tampilToast('success', message)
+    UI --> Chef : Muncul Toast OREN Sukses
+
+    JS -> JS : window.location.reload() (Jeda 1.5 detik)
+    UI --> Chef : Halaman Refresh (Stok Terupdate)
+end
+
 deactivate BE
-
-JS -> UI : tutupResep()
-JS -> UI : tampilToast('success', message)
-UI --> Chef : Muncul Toast OREN Sukses
-
-JS -> JS : window.location.reload() (Jeda 1.5 detik)
 deactivate JS
-UI --> Chef : Halaman Refresh (Stok Terupdate)
 deactivate UI
 @enduml

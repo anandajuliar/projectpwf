@@ -1,17 +1,16 @@
 @startuml BakeLab_ERD
 
-' Konfigurasi tampilan biar garisnya rapi (menyiku) dan bersih
 skinparam linetype ortho
 skinparam shadowing false
 skinparam EntityBackgroundColor #F9F9F9
 skinparam EntityBorderColor #2C3E50
 skinparam ArrowColor #2980B9
 
+skinparam nodesep 120
+skinparam ranksep 140
+
 title Entity-Relationship Diagram (ERD) - BakeLab
 
-' ==========================================
-' ENTITAS / TABEL
-' ==========================================
 
 entity "users" as users {
   * id : bigint <<PK>>
@@ -78,12 +77,11 @@ entity "stock_logs" as stock_logs {
   updated_at : timestamp
 }
 
-' ==========================================
-' RELASI ANTAR TABEL (Crow's Foot Notation)
-' ==========================================
-' Notasi:
-' ||--o{  : One to Many (Satu ke Banyak)
-' |o--o{  : Zero or One to Many (Bisa Null ke Banyak)
+
+users -[hidden]right-> products
+recipes -[hidden]right-> recipe_ingredients
+recipe_ingredients -[hidden]right-> stock_logs
+
 
 users ||--o{ recipes : "dibuat oleh"
 users ||--o{ stock_logs : "dicatat oleh"

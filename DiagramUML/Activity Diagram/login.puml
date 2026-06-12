@@ -1,4 +1,4 @@
-@startuml
+@startuml Login Chef Act Diagram
 |User|
 start
 :Membuka halaman Login;

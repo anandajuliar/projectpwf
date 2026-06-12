@@ -1,4 +1,4 @@
-@startuml
+@startuml kurangistock Act
 |User (Chef)|
 start
 :Membuka menu "Cek Sisa Stok";

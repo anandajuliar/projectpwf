@@ -1,4 +1,4 @@
-@startuml
+@startuml dashboard Act Diagram
 |Admin|
 start
 :Membuka halaman Dashboard;

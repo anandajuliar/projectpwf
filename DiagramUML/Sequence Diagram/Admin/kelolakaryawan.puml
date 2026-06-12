@@ -1,4 +1,4 @@
-@startuml
+@startuml kelolakaryawan
 actor Admin
 boundary "Manajemen Karyawan View" as UI
 control "JavaScript Fetch Engine" as JS

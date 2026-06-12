@@ -1,4 +1,4 @@
-@startuml
+@startuml Login
 actor User
 boundary "Halaman Login (Blade)" as UI
 control "JavaScript (Fetch API)" as JS

@@ -1,10 +1,19 @@
-@startuml
+@startuml Mapping
 skinparam componentStyle uml2
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+skinparam nodesep 60
+skinparam ranksep 100
+
+title Arsitektur Sistem - BakeLab
 
 package "Client Side (Laptop/Tablet)" #FFF2CC {
     [Browser User] as browser
     component "Frontend Engine\n(Blade + JS Fetch API)" as fe
-    browser --> fe : Interaksi Klik
+    
+    ' Komponen dalam kotak disusun menurun ke bawah '
+    browser -down-> fe : Interaksi Klik
 }
 
 package "Server Side (Web Server)" #E1F5FE {
@@ -12,15 +21,16 @@ package "Server Side (Web Server)" #E1F5FE {
     component "Sanctum Middleware\n(Cek Token)" as auth
     component "Controllers\n(Logika Bisnis)" as ctrl
     
-    laravel --> auth
-    auth --> ctrl
+    laravel -down-> auth
+    auth -down-> ctrl
 }
 
 database "Database Side" #E8F5E9 {
     [MySQL Database] as db
 }
 
-' JALUR KOMUNIKASI '
-fe <--> laravel : HTTP Request / Response\n(Format JSON)
-ctrl <--> db : Eloquent ORM\n(SQL Queries)
+fe <-right-> laravel : HTTP Request / Response\n(Format JSON)
+
+ctrl <-right-> db : Eloquent ORM\n(SQL Queries)
+
 @enduml

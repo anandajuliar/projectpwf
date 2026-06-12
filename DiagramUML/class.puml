@@ -1,4 +1,4 @@
-@startuml
+@startuml Class Diagram
 skinparam shadowing false
 skinparam classAttributeIconSize 0
 skinparam classFontStyle bold
@@ -13,9 +13,7 @@ skinparam class {
     HeaderBorderColor #D97706
 }
 
-' ============================================================
-' ACTOR / ENUM (role)
-' ============================================================
+
 
 enum Role {
     admin
@@ -28,9 +26,7 @@ enum StockType {
     recipe_reduce
 }
 
-' ============================================================
-' MODEL CLASSES
-' ============================================================
+
 
 class User {
     + id : int
@@ -130,9 +126,7 @@ class StockLog {
     + scopeInDateRange(query, from, to) : Builder
 }
 
-' ============================================================
-' CONTROLLER CLASSES
-' ============================================================
+
 
 class AuthController {
     + login(request) : JsonResponse
@@ -183,9 +177,7 @@ class CategoryController {
     + destroy(id) : JsonResponse
 }
 
-' ============================================================
-' RELASI ANTAR MODEL
-' ============================================================
+
 
 User "1" --> "0..*" Recipe        : creates >
 User "1" --> "0..*" StockLog      : performs >
@@ -194,9 +186,7 @@ Recipe "1" --> "1..*" RecipeIngredient : contains >
 Product "1" --> "0..*" RecipeIngredient : used in >
 Recipe "0..1" --> "0..*" StockLog : triggers >
 
-' ============================================================
-' RELASI CONTROLLER KE MODEL
-' ============================================================
+
 
 AuthController ..> User             : <<uses>>
 UserController ..> User             : <<manages>>
@@ -208,9 +198,7 @@ RecipeController ..> StockLog       : <<creates>>
 StockLogController ..> StockLog     : <<reads>>
 CategoryController ..> Category     : <<manages>>
 
-' ============================================================
-' ENUM RELASI
-' ============================================================
+
 
 User --> Role : has
 StockLog --> StockType : typed as
