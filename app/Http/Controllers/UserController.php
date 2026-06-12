@@ -12,12 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
-    /**
-     * Menampilkan semua user (admin & chef).
-     * Hanya admin yang bisa mengakses (dijaga middleware).
-     *
-     * GET /api/users
-     */
+
     public function index(Request $request): JsonResponse
     {
         $query = User::query();
@@ -56,7 +51,7 @@ class UserController extends Controller
     }
     
     /**
-     * Membuat akun karyawan baru (Otomatis sebagai Chef).
+     * Membuat akun karyawan baru 
      *
      * POST /api/users
      */
@@ -95,7 +90,7 @@ class UserController extends Controller
 
     /**
      * Menampilkan detail satu user.
-     * Hanya admin yang bisa mengakses (dijaga middleware).
+     *
      *
      * GET /api/users/{id}
      */
@@ -109,9 +104,7 @@ class UserController extends Controller
     }
 
     /**
-     * Memperbarui data user (nama, email, password, role).
-     * Hanya admin yang bisa mengakses (dijaga middleware).
-     *
+     * Memperbarui data user      
      * PUT /api/users/{id}
      */
     public function update(UpdateUserRequest $request, User $user): JsonResponse
@@ -134,9 +127,6 @@ class UserController extends Controller
 
     /**
      * Mengaktifkan atau menonaktifkan user.
-     * Hanya admin yang bisa mengakses (dijaga middleware).
-     * Admin tidak bisa menonaktifkan dirinya sendiri.
-     *
      * PATCH /api/users/{id}/toggle-active
      */
     public function toggleActive(Request $request, User $user): JsonResponse
@@ -162,9 +152,7 @@ class UserController extends Controller
 
     /**
      * Menghapus user.
-     * Hanya admin yang bisa mengakses (dijaga middleware).
-     * Admin tidak bisa menghapus dirinya sendiri.
-     *
+
      * DELETE /api/users/{id}
      */
     public function destroy(Request $request, User $user): JsonResponse

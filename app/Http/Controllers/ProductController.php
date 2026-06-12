@@ -17,8 +17,6 @@ use Symfony\Component\HttpFoundation\Response;
 class ProductController extends Controller
 {
     /**
-     * Menampilkan semua produk/bahan baku.
-     * Mendukung filter by category, search by name, dan sort.
      *
      * GET /api/products
      */
@@ -72,7 +70,6 @@ class ProductController extends Controller
 
     /**
      * Membuat produk/bahan baku baru.
-     * Hanya admin yang bisa mengakses (dijaga middleware).
      *
      * POST /api/products
      */
@@ -134,19 +131,7 @@ class ProductController extends Controller
         ], Response::HTTP_OK);
     }
 
-    /**
-     * =====================================================================
-     * ENDPOINT KHUSUS: Potong Stok Bahan Baku (Manual)
-     * =====================================================================
-     * Memungkinkan chef/admin mengurangi stok secara manual.
-     * Setiap pengurangan dicatat ke tabel stock_logs.
-     *
-     * POST /api/products/{id}/reduce
-     *
-     * Request body:
-     *   - qty  (required) : jumlah yang akan dikurangi
-     *   - note (optional) : catatan penggunaan, misal "untuk 5 loyang brownies"
-     */
+    
     public function reduceStock(ReduceStockRequest $request, Product $product): JsonResponse
     {
         $reduceQty = $request->qty;
@@ -194,19 +179,7 @@ class ProductController extends Controller
         ], Response::HTTP_OK);
     }
 
-    /**
-     * =====================================================================
-     * ENDPOINT KHUSUS: Tambah Stok / Restock
-     * =====================================================================
-     * Admin menambah stok bahan baku (pembelian/restock).
-     * Setiap penambahan dicatat ke tabel stock_logs.
-     *
-     * POST /api/products/{id}/add
-     *
-     * Request body:
-     *   - qty  (required) : jumlah yang ditambahkan
-     *   - note (optional) : catatan, misal "pembelian dari supplier Toko ABC"
-     */
+
     public function addStock(AddStockRequest $request, Product $product): JsonResponse
     {
         $addQty = $request->qty;
@@ -241,14 +214,6 @@ class ProductController extends Controller
         ], Response::HTTP_OK);
     }
 
-    /**
-     * =====================================================================
-     * ENDPOINT SUMMARY / DASHBOARD
-     * =====================================================================
-     * Mengembalikan ringkasan kondisi stok bahan baku untuk keperluan dashboard.
-     *
-     * GET /api/products/summary
-     */
     public function summary(): JsonResponse
     {
         $total  = Product::count();
@@ -287,14 +252,7 @@ class ProductController extends Controller
         ], Response::HTTP_OK);
     }
 
-    /**
-     * =====================================================================
-     * Riwayat Perubahan Stok per Produk
-     * =====================================================================
-     * Menampilkan histori log stok untuk satu produk tertentu.
-     *
-     * GET /api/products/{id}/logs
-     */
+    
     public function logs(Request $request, Product $product): JsonResponse
     {
         $query = $product->stockLogs()

@@ -2,8 +2,6 @@
 @section('title', 'Manajemen Karyawan')
 
 @section('content')
-
-{{-- Toast Notification --}}
 <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
 
 <div class="mb-8 border-b pb-4">
@@ -27,21 +25,6 @@
                 <th class="text-center py-3 px-4 uppercase font-semibold text-sm">Aksi</th>
             </tr>
         </thead>
-
-        <tbody class="text-gray-700">
-            <tr class="border-b hover:bg-gray-50">
-                <td class="text-left py-3 px-4 flex items-center"><span class="text-2xl mr-2">👨‍💼</span> Admin Utama</td>
-                <td class="text-left py-3 px-4">admin@pwf.com</td>
-                <td class="text-left py-3 px-4"><span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Admin Gudang</span></td>
-                <td class="text-center py-3 px-4 text-gray-400 italic">Tidak bisa dihapus</td>
-            </tr>
-            <tr class="border-b hover:bg-gray-50">
-                <td class="text-left py-3 px-4 flex items-center"><span class="text-2xl mr-2">👨‍🍳</span> Chef Budi</td>
-                <td class="text-left py-3 px-4">chef@pwf.com</td>
-                <td class="text-left py-3 px-4"><span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Staf Dapur</span></td>
-                <td class="text-center py-3 px-4">
-                    <button class="text-red-500 hover:text-red-700 font-semibold" onclick="alert('Fungsi Cabut Akses disiapkan!')">Cabut Akses</button>
-                </td>
         <tbody id="tabel-pengguna" class="text-gray-700">
             <tr>
                 <td colspan="4" class="text-center py-8 text-gray-400">Memuat data pengguna...</td>
@@ -50,7 +33,6 @@
     </table>
 </div>
 
-{{-- Modal Tambah / Edit Karyawan --}}
 <div id="modalKaryawan" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
     <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
         <h3 id="modal-title" class="text-2xl font-bold text-gray-800 mb-1">Pendaftaran Chef Baru</h3>
@@ -109,9 +91,6 @@
 </style>
 
 <script>
-// ===================================================================
-// TOAST NOTIFICATION
-// ===================================================================
 function tampilkanToast(pesan, tipe = 'sukses') {
     const container = document.getElementById('toast-container');
     const warna = tipe === 'sukses'
@@ -135,9 +114,6 @@ function tampilkanToast(pesan, tipe = 'sukses') {
     }, 4000);
 }
 
-// ===================================================================
-// PROTEKSI HALAMAN: Hanya Admin
-// ===================================================================
 document.addEventListener("DOMContentLoaded", function () {
     const role = localStorage.getItem('user_role');
     if (role !== 'admin') {
@@ -148,16 +124,12 @@ document.addEventListener("DOMContentLoaded", function () {
     muatDaftarPengguna();
 });
 
-// ===================================================================
-// KONTROL MODAL (TAMBAH / EDIT)
-// ===================================================================
 function bukaModalKaryawan(user = null) {
     const modal = document.getElementById('modalKaryawan');
     document.getElementById('formKaryawan').reset();
     document.getElementById('form-error').classList.add('hidden');
     
     if (user) {
-        // Mode Edit
         document.getElementById('modal-title').innerText = 'Edit Data Karyawan';
         document.getElementById('modal-desc').innerText = 'Perbarui data diri atau reset password karyawan.';
         document.getElementById('edit-id').value = user.id;
@@ -167,7 +139,6 @@ function bukaModalKaryawan(user = null) {
         document.getElementById('password-hint').innerText = '(Opsional)';
         document.getElementById('password-help').classList.remove('hidden');
     } else {
-        // Mode Tambah
         document.getElementById('modal-title').innerText = 'Pendaftaran Chef Baru';
         document.getElementById('modal-desc').innerText = 'Isi data berikut untuk membuat akun staf dapur baru.';
         document.getElementById('edit-id').value = '';
@@ -184,9 +155,6 @@ function tutupModalKaryawan() {
     document.getElementById('label-btn').innerText = 'Simpan Data';
 }
 
-// ===================================================================
-// SUBMIT FORM (CREATE / UPDATE)
-// ===================================================================
 async function submitKaryawan() {
     const id       = document.getElementById('edit-id').value;
     const nama     = document.getElementById('input-nama').value.trim();
@@ -195,24 +163,23 @@ async function submitKaryawan() {
     const errorBox = document.getElementById('form-error');
 
     if (!nama || !email) {
-        errorBox.textContent = 'Nama dan email wajib diisi.';
+        errorBox.innerHTML = 'Nama dan email wajib diisi.';
         errorBox.classList.remove('hidden');
         return;
     }
     if (!id && password.length < 8) {
-        errorBox.textContent = 'Untuk akun baru, password wajib minimal 8 karakter.';
+        errorBox.innerHTML = 'Untuk akun baru, password wajib minimal 8 karakter.';
         errorBox.classList.remove('hidden');
         return;
     }
 
     const token = localStorage.getItem('auth_token');
     const isEdit = id !== '';
-    const endpoint = isEdit ? `/api/users/${id}` : '/api/users'; // Jika edit tembak PUT, jika tambah tembak POST
+    const endpoint = isEdit ? `/api/users/${id}` : '/api/users';
     const method = isEdit ? 'PUT' : 'POST';
 
     const payload = { name: nama, email: email };
     
-    // Kirim password hanya jika diisi
     if (password) {
         payload.password = password;
         payload.password_confirmation = password;
@@ -235,11 +202,18 @@ async function submitKaryawan() {
             tampilkanToast(`Data ${nama} berhasil disimpan!`, 'sukses');
             muatDaftarPengguna();
         } else {
-            errorBox.textContent = json.message || 'Gagal menyimpan data.';
+            let pesanError = json.message || 'Gagal menyimpan data.';
+            if (res.status === 422 && json.errors) {
+                pesanError = '';
+                for (const [field, messages] of Object.entries(json.errors)) {
+                    pesanError += `• ${messages.join(', ')} <br>`;
+                }
+            }
+            errorBox.innerHTML = pesanError;
             errorBox.classList.remove('hidden');
         }
     } catch (err) {
-        errorBox.textContent = 'Koneksi ke server gagal.';
+        errorBox.innerHTML = 'Koneksi ke server gagal.';
         errorBox.classList.remove('hidden');
     } finally {
         document.getElementById('btn-submit').disabled = false;
@@ -247,9 +221,6 @@ async function submitKaryawan() {
     }
 }
 
-// ===================================================================
-// MUAT DAFTAR PENGGUNA DARI API
-// ===================================================================
 async function muatDaftarPengguna() {
     const token = localStorage.getItem('auth_token');
     const tbody = document.getElementById('tabel-pengguna');
@@ -300,9 +271,6 @@ async function muatDaftarPengguna() {
     }
 }
 
-// ===================================================================
-// CABUT AKSES (Nonaktifkan / Hapus)
-// ===================================================================
 async function cabutAkses(userId, namaUser) {
     if (!confirm(`Yakin ingin mencabut akses untuk ${namaUser}?\nChef tersebut tidak akan bisa login setelah ini.`)) return;
 

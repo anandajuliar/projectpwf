@@ -12,7 +12,6 @@ class StockLogController extends Controller
 {
     /**
      * Menampilkan semua riwayat perubahan stok dengan filter.
-     * Dapat difilter berdasarkan produk, user, tipe, dan rentang tanggal.
      *
      * GET /api/stock-logs
      */

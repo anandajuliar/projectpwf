@@ -4,7 +4,7 @@
 @section('content')
 <div class="flex justify-center items-center mt-10">
     <div class="bg-white p-8 rounded-lg shadow-lg w-96 border-t-4 border-amber-600">
-        <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">Login Karyawan</h2>
+        <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">Login</h2>
         <p class="text-center text-sm text-gray-500 mb-6">Masukkan kredensial akun Anda untuk melanjutkan.</p>
 
         {{-- Pesan Error --}}
@@ -32,7 +32,7 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                 </svg>
-                <span id="btn-label">Masuk Sistem</span>
+                <span id="btn-label">Login</span>
             </button>
         </form>
     </div>

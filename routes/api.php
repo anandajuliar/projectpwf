@@ -5,6 +5,11 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\StockLogController;
 use App\Http\Controllers\UserController;
+
+// Import Controller untuk Tugas Kampus
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\ProductApiController;
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,7 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // =====================================================================
-// PRODUCT / BAHAN BAKU ROUTES
+// PRODUCT / BAHAN BAKU ROUTES (BakeLab Asli)
 // =====================================================================
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -111,5 +116,3 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
     Route::delete('/users/{user}',             [UserController::class, 'destroy'])->name('users.destroy');
 });
-
-

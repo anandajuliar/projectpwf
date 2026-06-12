@@ -15,12 +15,10 @@
     </div>
 </div>
 
-{{-- Grid Resep --}}
 <div id="recipe-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
     <div class="col-span-4 text-center py-12 text-gray-400">Memuat resep...</div>
 </div>
 
-{{-- BAGIAN KHUSUS CHEF: RIWAYAT PRODUKSI HARI INI --}}
 <div id="chef-history-section" class="hidden">
     <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
         <span>📋</span> Riwayat Produksi Dapur Hari Ini
@@ -43,7 +41,6 @@
     </div>
 </div>
 
-{{-- MODAL CHEF: EKSEKUSI PRODUKSI --}}
 <div id="modalResep" class="fixed inset-0 bg-black bg-opacity-60 hidden flex justify-center items-center z-50">
     <div class="bg-white p-0 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
         <div class="bg-amber-600 text-white px-8 py-5 flex justify-between items-center shrink-0">
@@ -90,7 +87,6 @@
     </div>
 </div>
 
-{{-- MODAL ADMIN: CRUD RESEP (TAMBAH / EDIT) --}}
 <div id="modalCrudResep" class="fixed inset-0 bg-black bg-opacity-60 hidden flex justify-center items-center z-50">
     <div class="bg-white p-0 rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[95vh]">
         <div class="bg-gray-800 text-white px-8 py-4 flex justify-between items-center shrink-0">
@@ -139,7 +135,6 @@
                         + Tambah Bahan
                     </button>
                 </div>
-                
                 <div id="crud-bahan-container" class="space-y-3"></div>
             </div>
 
@@ -160,7 +155,6 @@
     </div>
 </div>
 
-{{-- TOAST THEMA OREN --}}
 <div id="toast" class="fixed bottom-6 right-6 z-[9999] hidden">
     <div id="toast-inner" class="px-6 py-4 rounded-xl shadow-2xl text-white font-bold text-sm max-w-md flex items-start gap-3 border-l-4">
         <span id="toast-icon" class="text-lg leading-none mt-0.5"></span>
@@ -176,9 +170,6 @@ let selectedRecipe = null;
 let toastTimeout;
 let dbProducts = []; 
 
-// ===========================================================
-// INISIALISASI
-// ===========================================================
 document.addEventListener('DOMContentLoaded', function () {
     if (!authToken) { window.location.href = '/login'; return; }
 
@@ -199,9 +190,6 @@ document.addEventListener('DOMContentLoaded', function () {
     setupInputPorsi();
 });
 
-// ===========================================================
-// VALIDASI INPUT PORSI STRICT
-// ===========================================================
 function setupInputPorsi() {
     const inputPorsi = document.getElementById('input-porsi');
     inputPorsi.addEventListener('input', function(e) {
@@ -224,9 +212,6 @@ function ubahPorsi(delta) {
     input.value = val;
 }
 
-// ===========================================================
-// TOAST CUSTOM OREN
-// ===========================================================
 function tampilToast(type, msg) {
     const toast = document.getElementById('toast');
     const inner = document.getElementById('toast-inner');
@@ -252,9 +237,6 @@ function escHtml(str) {
     return d.innerHTML;
 }
 
-// ===========================================================
-// GRID RESEP UTAMA
-// ===========================================================
 async function muatResep() {
     try {
         const res  = await fetch('/api/recipes?is_active=true&per_page=50', {
@@ -305,9 +287,6 @@ function klikCardResep(recipe) {
     }
 }
 
-// ===========================================================
-// MODAL CHEF: EKSEKUSI PRODUKSI
-// ===========================================================
 async function bukaResepChef(recipe) {
     try {
         const res  = await fetch(`/api/recipes/${recipe.id}`, {
@@ -357,7 +336,6 @@ function tutupResep() {
     selectedRecipe = null;
 }
 
-// INI FUNGSI YANG UDAH DIPERBAIKI (TIDAK AKAN CRASH LAGI)
 async function eksekusiResep() {
     if (!selectedRecipe) return;
 
@@ -367,7 +345,7 @@ async function eksekusiResep() {
     const btn      = document.getElementById('btn-eksekusi');
 
     if (isNaN(portions) || portions < 1) {
-        errEl.innerText = 'Jumlah porsi tidak valid (Minimal 1).';
+        errEl.innerHTML = 'Jumlah porsi tidak valid (Minimal 1).';
         errEl.classList.remove('hidden');
         return;
     }
@@ -391,9 +369,7 @@ async function eksekusiResep() {
         
         if (res.ok && json.success) {
             const recipeName = selectedRecipe.name; 
-            
             tutupResep(); 
-            
             tampilToast('success', `Berhasil memproduksi ${portions} porsi ${recipeName}!`);
             muatRiwayatChef(); 
         } else {
@@ -405,7 +381,14 @@ async function eksekusiResep() {
                 listHtml += '</ul>';
                 errEl.innerHTML = listHtml;
             } else {
-                errEl.innerText = json.message || 'Gagal mengeksekusi resep.';
+                let pesanError = json.message || 'Gagal mengeksekusi resep.';
+                if (res.status === 422 && json.errors) {
+                    pesanError = '';
+                    for (const [field, messages] of Object.entries(json.errors)) {
+                        pesanError += `• ${messages.join(', ')} <br>`;
+                    }
+                }
+                errEl.innerHTML = pesanError;
             }
             errEl.classList.remove('hidden');
         }
@@ -415,23 +398,16 @@ async function eksekusiResep() {
     } finally {
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<span>👨‍🍳</span> Mulai Produksi (Potong Stok Otomatis)';
+            btn.innerHTML = '<span>👨‍🍳</span> Mulai Produksi (Potong Stok)';
         }
     }
 }
 
-// ===========================================================
-// CHEF HISTORY: RIWAYAT PRODUKSI HARI INI
-// ===========================================================
-// ===========================================================
-// CHEF HISTORY: RIWAYAT PRODUKSI TERAKHIR
-// ===========================================================
 async function muatRiwayatChef() {
     if (userRole !== 'chef') return;
     const tbody = document.getElementById('history-tbody');
 
     try {
-        
         const res = await fetch(`/api/stock-logs?type=recipe_reduce&per_page=30`, {
             headers: { 'Authorization': 'Bearer ' + authToken, 'Accept': 'application/json' }
         });
@@ -480,9 +456,6 @@ async function muatRiwayatChef() {
     }
 }
 
-// ===========================================================
-// ADMIN CRUD: MANAJEMEN RESEP
-// ===========================================================
 async function fetchProdukGudang() {
     try {
         const res = await fetch('/api/products?per_page=100', {
@@ -607,11 +580,11 @@ async function simpanCrudResep() {
     });
 
     if (!name || isNaN(default_portions) || default_portions < 1) {
-        errEl.innerText = 'Nama resep dan default porsi wajib diisi dengan benar.';
+        errEl.innerHTML = 'Nama resep dan default porsi wajib diisi dengan benar.';
         errEl.classList.remove('hidden'); return;
     }
     if (ingredients.length === 0) {
-        errEl.innerText = 'Resep harus memiliki minimal 1 bahan baku yang valid (Pilih bahan dan isi jumlahnya).';
+        errEl.innerHTML = 'Resep harus memiliki minimal 1 bahan baku yang valid (Pilih bahan dan isi jumlahnya).';
         errEl.classList.remove('hidden'); return;
     }
 
@@ -644,11 +617,18 @@ async function simpanCrudResep() {
             tampilToast('success', `Resep "${name}" berhasil disimpan!`);
             muatResep();
         } else {
-            errEl.innerText = json.message || 'Gagal menyimpan resep.';
+            let pesanError = json.message || 'Gagal menyimpan resep.';
+            if (res.status === 422 && json.errors) {
+                pesanError = '';
+                for (const [field, messages] of Object.entries(json.errors)) {
+                    pesanError += `• ${messages.join(', ')} <br>`;
+                }
+            }
+            errEl.innerHTML = pesanError;
             errEl.classList.remove('hidden');
         }
     } catch(e) {
-        errEl.innerText = 'Koneksi ke server gagal.';
+        errEl.innerHTML = 'Koneksi ke server gagal.';
         errEl.classList.remove('hidden');
     } finally {
         btn.disabled = false;

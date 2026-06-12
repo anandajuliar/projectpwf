@@ -60,7 +60,6 @@ class AuthController extends Controller
     }
 
     /**
-     * Register chef baru. Hanya bisa diakses oleh admin (dijaga middleware).
      *
      * POST /api/auth/register
      */

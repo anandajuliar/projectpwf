@@ -152,11 +152,7 @@ class RecipeController extends Controller
         ], Response::HTTP_OK);
     }
 
-    /**
-     * =====================================================================
-     * ENDPOINT UTAMA: Eksekusi Resep — Potong Stok Otomatis
-     * =====================================================================
-     */
+    
     public function execute(ExecuteRecipeRequest $request, Recipe $recipe): JsonResponse
     {
         try {

@@ -7,9 +7,6 @@
     <p class="text-gray-500 mt-1" id="page-desc">Silakan tunggu sebentar.</p>
 </div>
 
-{{-- ============================================================ --}}
-{{-- TAMPILAN ADMIN --}}
-{{-- ============================================================ --}}
 <div id="admin-view" class="hidden">
     <div class="flex flex-wrap gap-3 mb-4 justify-between items-center">
         <div class="flex gap-2">
@@ -44,13 +41,9 @@
         </table>
     </div>
 
-    <!-- Pagination Admin -->
     <div id="admin-pagination" class="flex justify-between items-center mt-4 text-sm text-gray-600"></div>
 </div>
 
-{{-- ============================================================ --}}
-{{-- TAMPILAN CHEF --}}
-{{-- ============================================================ --}}
 <div id="chef-view" class="hidden">
     <div class="mb-4 flex gap-2">
         <input type="text" id="chefSearch" onkeyup="cariProdukChef()" placeholder="Cari bahan baku..." class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 w-full max-w-xs">
@@ -61,9 +54,6 @@
     <div id="chef-pagination" class="flex justify-center gap-2 mt-6"></div>
 </div>
 
-{{-- ============================================================ --}}
-{{-- MODAL: KURANGI STOK (CHEF / ADMIN) --}}
-{{-- ============================================================ --}}
 <div id="modalKurangiStok" class="fixed inset-0 bg-black bg-opacity-60 hidden flex justify-center items-center z-50">
     <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
         <div class="flex justify-between items-center mb-5 border-b pb-3">
@@ -108,9 +98,6 @@
     </div>
 </div>
 
-{{-- ============================================================ --}}
-{{-- MODAL: TAMBAH BAHAN BAKU (ADMIN) --}}
-{{-- ============================================================ --}}
 <div id="modalTambahBahan" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
     <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all">
         <div class="flex justify-between items-center mb-6 border-b pb-3">
@@ -191,9 +178,6 @@
     </div>
 </div>
 
-{{-- ============================================================ --}}
-{{-- MODAL: TAMBAH STOK / RESTOCK (ADMIN) --}}
-{{-- ============================================================ --}}
 <div id="modalRestok" class="fixed inset-0 bg-black bg-opacity-60 hidden flex justify-center items-center z-50">
     <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
         <div class="flex justify-between items-center mb-5 border-b pb-3">
@@ -238,9 +222,6 @@
     </div>
 </div>
 
-{{-- ============================================================ --}}
-{{-- TOAST NOTIFIKASI --}}
-{{-- ============================================================ --}}
 <div id="toast" class="fixed bottom-6 right-6 z-[100] hidden">
     <div id="toast-inner" class="px-6 py-4 rounded-xl shadow-xl text-white font-semibold text-sm max-w-sm flex items-center gap-3">
         <span id="toast-icon"></span>
@@ -249,9 +230,6 @@
 </div>
 
 <script>
-// ===========================================================
-// STATE GLOBAL
-// ===========================================================
 let authToken   = localStorage.getItem('auth_token');
 let userRole    = localStorage.getItem('user_role');
 let currentPage = 1;
@@ -259,9 +237,6 @@ let selectedProductId   = null;
 let selectedProductData = null;
 let searchTimeout       = null;
 
-// ===========================================================
-// INISIALISASI
-// ===========================================================
 document.addEventListener("DOMContentLoaded", function () {
     if (!authToken) { window.location.href = '/login'; return; }
 
@@ -281,9 +256,6 @@ document.addEventListener("DOMContentLoaded", function () {
     muatProduk();
 });
 
-// ===========================================================
-// FETCH PRODUK DARI BACKEND
-// ===========================================================
 async function muatProduk(page = 1) {
     currentPage = page;
     const search = document.getElementById(userRole === 'admin' ? 'searchInput' : 'chefSearch')?.value || '';
@@ -319,9 +291,6 @@ function cariProduk() {
 }
 function cariProdukChef() { cariProduk(); }
 
-// ===========================================================
-// RENDER DATA
-// ===========================================================
 function renderData(products, role) {
     if (role === 'admin') renderAdmin(products);
     else renderChef(products);
@@ -423,9 +392,6 @@ function renderPaginasi(meta) {
         </div>`;
 }
 
-// ===========================================================
-// MODAL KURANGI STOK
-// ===========================================================
 function bukaModalKurangi(product) {
     selectedProductData = product;
     selectedProductId   = product.id;
@@ -449,7 +415,7 @@ async function submitKurangiStok() {
     const errEl = document.getElementById('kurangi-error');
 
     if (!qty || qty <= 0) {
-        errEl.innerText = 'Jumlah yang digunakan harus lebih dari 0.';
+        errEl.innerHTML = 'Jumlah yang digunakan harus lebih dari 0.';
         errEl.classList.remove('hidden');
         return;
     }
@@ -477,11 +443,18 @@ async function submitKurangiStok() {
             tampilToast('success', `✅ Stok ${selectedProductData.name} berhasil dikurangi ${qty} ${selectedProductData.unit}!`);
             muatProduk(currentPage);
         } else {
-            errEl.innerText = json.message || 'Gagal memotong stok.';
+            let pesanError = json.message || 'Gagal memotong stok.';
+            if (res.status === 422 && json.errors) {
+                pesanError = '';
+                for (const [field, messages] of Object.entries(json.errors)) {
+                    pesanError += `• ${messages.join(', ')} <br>`;
+                }
+            }
+            errEl.innerHTML = pesanError;
             errEl.classList.remove('hidden');
         }
     } catch (e) {
-        errEl.innerText = 'Koneksi ke server gagal.';
+        errEl.innerHTML = 'Koneksi ke server gagal.';
         errEl.classList.remove('hidden');
     } finally {
         btn.disabled = false;
@@ -489,9 +462,6 @@ async function submitKurangiStok() {
     }
 }
 
-// ===========================================================
-// MODAL RESTOK / TAMBAH STOK (ADMIN)
-// ===========================================================
 function bukaModalRestok(product) {
     selectedProductData = product;
     selectedProductId   = product.id;
@@ -515,7 +485,7 @@ async function submitRestok() {
     const errEl = document.getElementById('restok-error');
 
     if (!qty || qty <= 0) {
-        errEl.innerText = 'Jumlah tambahan stok harus lebih dari 0.';
+        errEl.innerHTML = 'Jumlah tambahan stok harus lebih dari 0.';
         errEl.classList.remove('hidden');
         return;
     }
@@ -543,11 +513,18 @@ async function submitRestok() {
             tampilToast('success', `📥 Stok ${selectedProductData.name} berhasil ditambah ${qty} ${selectedProductData.unit}!`);
             muatProduk(currentPage);
         } else {
-            errEl.innerText = json.message || 'Gagal menambah stok.';
+            let pesanError = json.message || 'Gagal menambah stok.';
+            if (res.status === 422 && json.errors) {
+                pesanError = '';
+                for (const [field, messages] of Object.entries(json.errors)) {
+                    pesanError += `• ${messages.join(', ')} <br>`;
+                }
+            }
+            errEl.innerHTML = pesanError;
             errEl.classList.remove('hidden');
         }
     } catch (e) {
-        errEl.innerText = 'Koneksi ke server gagal.';
+        errEl.innerHTML = 'Koneksi ke server gagal.';
         errEl.classList.remove('hidden');
     } finally {
         btn.disabled = false;
@@ -555,9 +532,6 @@ async function submitRestok() {
     }
 }
 
-// ===========================================================
-// MODAL TAMBAH / EDIT PRODUK (ADMIN)
-// ===========================================================
 function bukaModalTambah() {
     document.getElementById('modal-tambah-judul').innerText = 'Tambah Bahan Baku';
     document.getElementById('editProductId').value = '';
@@ -619,17 +593,17 @@ async function simpanProduk() {
     };
 
     if (!payload.name) {
-        errEl.innerText = 'Nama bahan wajib diisi.';
+        errEl.innerHTML = 'Nama bahan wajib diisi.';
         errEl.classList.remove('hidden');
         return;
     }
     if (!/^[a-zA-Z0-9\s\(\)\'\&\-]+$/.test(payload.name)) {
-        errEl.innerText = "Nama bahan hanya boleh berisi huruf, angka, spasi, dan simbol ( ) ' & -";
+        errEl.innerHTML = "Nama bahan hanya boleh berisi huruf, angka, spasi, dan simbol ( ) ' & -";
         errEl.classList.remove('hidden');
         return;
     }
     if (payload.price_per_unit < 3000) {
-        errEl.innerText = 'Harga beli per satuan tidak boleh di bawah Rp 3.000.';
+        errEl.innerHTML = 'Harga beli per satuan tidak boleh di bawah Rp 3.000.';
         errEl.classList.remove('hidden');
         return;
     }
@@ -659,12 +633,18 @@ async function simpanProduk() {
             tampilToast('success', isEdit ? `✏️ Bahan "${payload.name}" berhasil diperbarui!` : `📦 Bahan "${payload.name}" berhasil ditambahkan!`);
             muatProduk(currentPage);
         } else {
-            const errors = json.errors ? Object.values(json.errors).flat().join(' | ') : (json.message || 'Gagal menyimpan.');
-            errEl.innerText = errors;
+            let pesanError = json.message || 'Gagal menyimpan data.';
+            if (res.status === 422 && json.errors) {
+                pesanError = '';
+                for (const [field, messages] of Object.entries(json.errors)) {
+                    pesanError += `• ${messages.join(', ')} <br>`;
+                }
+            }
+            errEl.innerHTML = pesanError;
             errEl.classList.remove('hidden');
         }
     } catch (e) {
-        errEl.innerText = 'Koneksi ke server gagal.';
+        errEl.innerHTML = 'Koneksi ke server gagal.';
         errEl.classList.remove('hidden');
     } finally {
         btn.disabled = false;
@@ -693,9 +673,6 @@ async function hapusProduk(id, nama) {
     }
 }
 
-// ===========================================================
-// TOAST NOTIFIKASI
-// ===========================================================
 let toastTimeout;
 function tampilToast(type, msg) {
     const toast = document.getElementById('toast');
@@ -716,9 +693,6 @@ function tampilError(msg) {
     tampilToast('error', msg);
 }
 
-// ===========================================================
-// HELPER
-// ===========================================================
 function escHtml(str) {
     const div = document.createElement('div');
     div.appendChild(document.createTextNode(str || ''));
