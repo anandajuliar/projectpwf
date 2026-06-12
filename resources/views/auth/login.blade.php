@@ -54,17 +54,15 @@
             const spinner  = document.getElementById('spinner');
             const btnLabel = document.getElementById('btn-label');
 
-            // Sembunyikan error lama
             errorBox.classList.add('hidden');
 
-            // Validasi dasar sisi klien
+
             if (!email || !password) {
                 errorTxt.textContent = 'Email dan password wajib diisi.';
                 errorBox.classList.remove('hidden');
                 return;
             }
 
-            // Set loading state
             loginBtn.disabled  = true;
             spinner.classList.remove('hidden');
             btnLabel.textContent = 'Memeriksa...';
@@ -89,21 +87,17 @@
                         localStorage.setItem('auth_token', token);
                         localStorage.setItem('user_role', userRole);
 
-                        // Arahkan sesuai role
+
                         btnLabel.textContent = 'Berhasil, mengalihkan...';
-                        window.location.href = userRole === 'admin' ? '/dashboard' : '/products';
+                        window.location.href = userRole === 'admin' ? '/dashboard' : '/dapur'; 
                     } else {
-<<<<<<< HEAD
-                        errorBox.innerHTML = "Akses Ditolak! " + (responBackend.message || "Email/Password salah!");
-=======
-                        // Respons berhasil tapi token tidak tersedia — seharusnya tidak terjadi
+
                         errorTxt.textContent = 'Terjadi kesalahan pada sistem. Silakan coba lagi atau hubungi administrator.';
->>>>>>> f5f09724dc2df00cc30be900d0299641fb86156b
                         errorBox.classList.remove('hidden');
                         resetBtn();
                     }
                 } else {
-                    // Tangani berbagai kode status secara ramah
+
                     let pesan = 'Email atau password yang Anda masukkan tidak sesuai.';
 
                     if (response.status === 403) {
@@ -113,7 +107,6 @@
                     } else if (response.status === 422) {
                         pesan = 'Format email tidak valid. Periksa kembali email yang Anda masukkan.';
                     } else if (result.message && !result.message.toLowerCase().includes('password')) {
-                        // Tampilkan pesan dari server hanya jika tidak mengandung info sensitif
                         pesan = result.message;
                     }
 
@@ -122,7 +115,7 @@
                     resetBtn();
                 }
             } catch (err) {
-                // Error jaringan / server tidak merespons
+
                 errorTxt.textContent = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda dan coba lagi.';
                 errorBox.classList.remove('hidden');
                 resetBtn();
