@@ -1,0 +1,47 @@
+@startuml
+skinparam class {
+    BackgroundColor<<Model>> #E8F5E9
+    BackgroundColor<<Table>> #FFEBEE
+}
+
+package "Laravel Eloquent Models (OOP)" {
+    class "Model: User" as M_User <<Model>> {
+        + id : BigInt
+        + name : String
+        + email : String
+        + role : String
+    }
+    
+    class "Model: Product" as M_Product <<Model>> {
+        + id : BigInt
+        + name : String
+        + qty : Integer
+        + min_qty : Integer
+        + price_per_unit : Decimal
+    }
+}
+
+package "MySQL Database Tables (Relational)" {
+    entity "table: users" as T_User <<Table>> {
+        * id [PK]
+        --
+        name : VARCHAR
+        email : VARCHAR
+        role : ENUM
+    }
+    
+    entity "table: products" as T_Product <<Table>> {
+        * id [PK]
+        --
+        name : VARCHAR
+        qty : INT
+        min_qty : INT
+        price_per_unit : DECIMAL
+    }
+}
+
+' JALUR PEMETAAN (MAPPING) '
+M_User "Maps to" --> T_User
+M_Product "Maps to" --> T_Product
+
+@enduml
