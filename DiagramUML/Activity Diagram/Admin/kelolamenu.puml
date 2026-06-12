@@ -1,0 +1,36 @@
+@startuml
+|User (Admin)|
+start
+:Membuka menu Dapur Produksi;
+
+if (Pilih Aksi CRUD?) then (Tambah / Edit Resep (C/U))
+    :Mengisi/mengubah data resep & komposisi bahan baku;
+    :Klik tombol "Simpan Resep";
+    |System|
+    :Validasi kelengkapan data & format porsi;
+    |Database|
+    :Simpan/Update data ke tabel 'recipes' & 'recipe_ingredients';
+elseif (Hapus Resep (D)) then
+    |User (Admin)|
+    :Klik tombol "Hapus" pada resep;
+    |System|
+    :Menampilkan pop-up konfirmasi hapus;
+    |Database|
+    :Hapus data resep dari database secara permanen;
+else (Lihat Detail Resep (R))
+    |User (Admin)|
+    :Klik salah satu kartu Resep di halaman;
+    |System|
+    :Request detail resep & sisa stok bahan baku;
+    |Database|
+    :Query data dari tabel 'recipes' dan 'products';
+endif
+
+|System|
+:Render pembaruan halaman & panggil tampilToast('success', ...);
+:Menampilkan Toast hijau di pojok kanan bawah;
+
+|User (Admin)|
+:Melihat perubahan data resep langsung terupdate di layar;
+stop
+@enduml

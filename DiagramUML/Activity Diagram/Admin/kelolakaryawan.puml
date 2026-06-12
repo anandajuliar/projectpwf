@@ -1,0 +1,28 @@
+@startuml
+|User (Admin)|
+start
+:Membuka menu Akun Karyawan;
+
+if (Pilih Aksi?) then (Tambah / Edit Karyawan)
+    :Mengisi form data (Nama, Email, Role, Status);
+    :Klik tombol "Simpan Akun";
+    |System|
+    :Validasi kelengkapan form & keunikan email;
+    |Database|
+    :Insert atau Update data ke tabel 'users';
+else (Hapus / Nonaktifkan)
+    |User (Admin)|
+    :Klik tombol "Hapus" pada baris karyawan;
+    |System|
+    :Memunculkan pop-up konfirmasi hapus;
+    |Database|
+    :Hapus data user dari tabel 'users';
+endif
+
+|System|
+:Menampilkan Toast sukses;
+
+|User (Admin)|
+:Melihat daftar tabel karyawan langsung terupdate;
+stop
+@enduml

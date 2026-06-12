@@ -1,0 +1,28 @@
+@startuml
+|User (Admin)|
+start
+:Membuka menu Master Gudang;
+
+if (Pilih Aksi?) then (Tambah / Edit Master Bahan Baku)
+    :Mengisi data (Nama Bahan, Kategori, Satuan, Min Stok);
+    :Klik tombol "Simpan Produk";
+    |System|
+    :Validasi format angka dan input;
+    |Database|
+    :Insert atau Update data ke tabel 'products';
+else (Hapus Bahan)
+    |User (Admin)|
+    :Klik tombol "Hapus" pada kartu bahan baku;
+    |System|
+    :Memunculkan pop-up konfirmasi hapus;
+    |Database|
+    :Hapus data produk dari database;
+endif
+
+|System|
+:Menampilkan Toast sukses;
+
+|User (Admin)|
+:Melihat daftar komponen stok gudang terbaru;
+stop
+@enduml
