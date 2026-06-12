@@ -1,4 +1,4 @@
-@startuml
+@startuml manajemenbahan
 actor Admin
 boundary "Master Gudang View" as UI
 control "JavaScript Fetch Engine" as JS

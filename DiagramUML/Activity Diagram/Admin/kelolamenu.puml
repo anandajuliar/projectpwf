@@ -1,4 +1,4 @@
-@startuml
+@startuml kelolamenu Act Diagram
 |Admin|
 start
 :Membuka menu Dapur Produksi;

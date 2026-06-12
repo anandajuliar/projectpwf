@@ -1,4 +1,4 @@
-@startuml
+@startuml Kurangi Stok
 actor Chef
 boundary "Halaman Gudang (Blade)" as UI
 control "JavaScript (Fetch API)" as JS
@@ -11,29 +11,42 @@ activate JS
 JS --> UI : Tampilkan Modal Form
 deactivate JS
 
-Chef -> UI : Input Jumlah Pemakaian (Gram/Ml)
+Chef -> UI : Input Jumlah Pemakaian & Catatan
 Chef -> UI : Klik "Potong Stok"
 activate UI
 
-UI -> JS : kurangiStok(id, qty)
+UI -> JS : kurangiStok(id, qty, note)
 activate JS
 
-JS -> BE : POST /api/products/{id}/reduce\n[Auth: Bearer Token, Body: qty]
+JS -> BE : POST /api/products/{id}/reduce\n[Auth: Bearer Token, Body: qty, note]
 activate BE
 
-BE -> DB : Update qty = qty - input
-activate DB
-DB --> BE : Update Berhasil
-deactivate DB
+BE -> BE : Validasi (qty_input <= stok_sekarang)
 
-BE --> JS : Return JSON (success: true)
+alt Stok Tidak Cukup
+    BE --> JS : Return JSON Error (422)
+    JS -> UI : tampilToast('error', 'Stok tidak mencukupi')
+else Stok Cukup
+    BE -> DB : Update products SET qty = qty - input
+    activate DB
+    DB --> BE : Update Berhasil
+    deactivate DB
+
+    BE -> DB : Insert ke tabel stock_logs\n(type: 'reduce')
+    activate DB
+    DB --> BE : Log Berhasil Dicatat
+    deactivate DB
+
+    BE --> JS : Return JSON (success: true)
+    
+    JS -> UI : tampilToast('success', pesan)
+    UI --> Chef : Muncul Toast OREN (Bawah Kanan)
+
+    JS -> JS : fetchProducts() (Update kartu stok)
+    JS -> UI : Render sisa stok terbaru di kartu
+end
+
 deactivate BE
-
-JS -> UI : tampilToast('success', pesan)
-UI --> Chef : Muncul Toast OREN (Bawah Kanan)
-
-JS -> JS : fetchProducts() (Update kartu stok)
-JS -> UI : Render sisa stok terbaru di kartu
 deactivate JS
 deactivate UI
 @enduml

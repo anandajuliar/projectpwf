@@ -1,4 +1,4 @@
-@startuml
+@startuml Class Diagram
 skinparam shadowing false
 skinparam classAttributeIconSize 0
 skinparam classFontStyle bold
@@ -13,18 +13,20 @@ skinparam class {
     HeaderBorderColor #D97706
 }
 
-' ============================================================
-' ACTOR / ENUM (role)
-' ============================================================
+
 
 enum Role {
     admin
     chef
 }
 
-' ============================================================
-' MODEL CLASSES
-' ============================================================
+enum StockType {
+    reduce
+    add
+    recipe_reduce
+}
+
+
 
 class User {
     + id : int
@@ -43,6 +45,13 @@ class User {
     + scopeChef(query) : Builder
 }
 
+class Category {
+    + id : int
+    + name : string
+    + created_at : datetime
+    + updated_at : datetime
+}
+
 class Product {
     + id : int
     + name : string
@@ -52,9 +61,11 @@ class Product {
     + qty : decimal
     + min_qty : decimal
     + price_per_unit : decimal
+    + deleted_at : datetime
     + created_at : datetime
     + updated_at : datetime
     --
+    + stockLogs() : HasMany
     + getStockStatusAttribute() : string
     + scopeOutOfStock(query) : Builder
     + scopeLowStock(query) : Builder
@@ -69,9 +80,13 @@ class Recipe {
     + default_portions : int
     + created_by : int <<FK>>
     + is_active : boolean
+    + deleted_at : datetime
     + created_at : datetime
     + updated_at : datetime
     --
+    + creator() : BelongsTo
+    + ingredients() : HasMany
+    + products() : BelongsToMany
     + getCostPerPortionAttribute() : float
     + scopeActive(query) : Builder
 }
@@ -82,14 +97,17 @@ class RecipeIngredient {
     + product_id : int <<FK>>
     + qty_per_portion : decimal
     + note : string
+    --
+    + recipe() : BelongsTo
+    + product() : BelongsTo
 }
 
 class StockLog {
     + id : int
     + product_id : int <<FK>>
-    + user_id : int <<FK>>
+    + user_id : int <<FK, nullable>>
     + recipe_id : int <<FK, nullable>>
-    + type : string
+    + type : StockType
     + qty_before : decimal
     + qty_changed : decimal
     + qty_after : decimal
@@ -99,15 +117,16 @@ class StockLog {
     + created_at : datetime
     + updated_at : datetime
     --
+    + product() : BelongsTo
+    + user() : BelongsTo
+    + recipe() : BelongsTo
     + scopeOfType(query, type) : Builder
     + scopeForProduct(query, productId) : Builder
     + scopeByUser(query, userId) : Builder
     + scopeInDateRange(query, from, to) : Builder
 }
 
-' ============================================================
-' CONTROLLER CLASSES
-' ============================================================
+
 
 class AuthController {
     + login(request) : JsonResponse
@@ -118,7 +137,8 @@ class AuthController {
 
 class UserController {
     + index(request) : JsonResponse
-    + show(request, user) : JsonResponse
+    + store(request) : JsonResponse
+    + show(user) : JsonResponse
     + update(request, user) : JsonResponse
     + toggleActive(request, user) : JsonResponse
     + destroy(request, user) : JsonResponse
@@ -150,9 +170,14 @@ class StockLogController {
     + show(stockLog) : JsonResponse
 }
 
-' ============================================================
-' RELASI ANTAR MODEL
-' ============================================================
+class CategoryController {
+    + index() : JsonResponse
+    + store(request) : JsonResponse
+    + update(request, id) : JsonResponse
+    + destroy(id) : JsonResponse
+}
+
+
 
 User "1" --> "0..*" Recipe        : creates >
 User "1" --> "0..*" StockLog      : performs >
@@ -161,9 +186,7 @@ Recipe "1" --> "1..*" RecipeIngredient : contains >
 Product "1" --> "0..*" RecipeIngredient : used in >
 Recipe "0..1" --> "0..*" StockLog : triggers >
 
-' ============================================================
-' RELASI CONTROLLER KE MODEL
-' ============================================================
+
 
 AuthController ..> User             : <<uses>>
 UserController ..> User             : <<manages>>
@@ -173,11 +196,11 @@ RecipeController ..> Recipe         : <<manages>>
 RecipeController ..> RecipeIngredient : <<manages>>
 RecipeController ..> StockLog       : <<creates>>
 StockLogController ..> StockLog     : <<reads>>
+CategoryController ..> Category     : <<manages>>
 
-' ============================================================
-' ENUM RELASI
-' ============================================================
+
 
 User --> Role : has
+StockLog --> StockType : typed as
 
 @enduml

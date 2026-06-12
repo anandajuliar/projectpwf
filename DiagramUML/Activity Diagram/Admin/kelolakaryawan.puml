@@ -1,5 +1,5 @@
-@startuml
-|Admin|
+@startuml kelolakaryawan Act
+|Admin| 
 start
 :Membuka menu Akun Karyawan;
 

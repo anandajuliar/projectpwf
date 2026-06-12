@@ -1,47 +1,95 @@
-@startuml
+@startuml Mapping
+
+skinparam nodesep 70
+skinparam ranksep 100
+skinparam shadowing false
+
 skinparam class {
     BackgroundColor<<Model>> #E8F5E9
     BackgroundColor<<Table>> #FFEBEE
+    BorderColor #2C3E50
+    ArrowColor #2980B9
 }
 
+title Mapping Table (OOP to Relational) - BakeLab
+
 package "Laravel Eloquent Models (OOP)" {
-    class "Model: User" as M_User <<Model>> {
+    class "App\\Models\\User" as M_User <<Model>> {
         + id : BigInt
         + name : String
         + email : String
-        + role : String
+        + role : Enum
     }
-    
-    class "Model: Product" as M_Product <<Model>> {
+    class "App\\Models\\Product" as M_Product <<Model>> {
         + id : BigInt
         + name : String
-        + qty : Integer
-        + min_qty : Integer
-        + price_per_unit : Decimal
+        + qty : Decimal
+        + min_qty : Decimal
     }
+    class "App\\Models\\Recipe" as M_Recipe <<Model>> {
+        + id : BigInt
+        + name : String
+        + default_portions : Int
+    }
+    class "App\\Models\\RecipeIngredient" as M_RI <<Model>> {
+        + id : BigInt
+        + qty_per_portion : Decimal
+    }
+    class "App\\Models\\StockLog" as M_Log <<Model>> {
+        + id : BigInt
+        + type : Enum
+        + qty_changed : Decimal
+    }
+
+    M_User -[hidden]down-> M_Product
+    M_Product -[hidden]down-> M_Recipe
+    M_Recipe -[hidden]down-> M_RI
+    M_RI -[hidden]down-> M_Log
 }
 
 package "MySQL Database Tables (Relational)" {
-    entity "table: users" as T_User <<Table>> {
+    entity "users" as T_User <<Table>> {
         * id [PK]
         --
         name : VARCHAR
         email : VARCHAR
-        role : ENUM
+        role : ENUM('admin', 'chef')
     }
-    
-    entity "table: products" as T_Product <<Table>> {
+    entity "products" as T_Product <<Table>> {
         * id [PK]
         --
         name : VARCHAR
-        qty : INT
-        min_qty : INT
-        price_per_unit : DECIMAL
+        qty : DECIMAL(10,2)
+        min_qty : DECIMAL(10,2)
     }
+    entity "recipes" as T_Recipe <<Table>> {
+        * id [PK]
+        --
+        name : VARCHAR
+        default_portions : SMALLINT
+    }
+    entity "recipe_ingredients" as T_RI <<Table>> {
+        * id [PK]
+        --
+        qty_per_portion : DECIMAL(10,2)
+    }
+    entity "stock_logs" as T_Log <<Table>> {
+        * id [PK]
+        --
+        type : ENUM
+        qty_changed : DECIMAL(10,2)
+    }
+
+    T_User -[hidden]down-> T_Product
+    T_Product -[hidden]down-> T_Recipe
+    T_Recipe -[hidden]down-> T_RI
+    T_RI -[hidden]down-> T_Log
 }
 
-' JALUR PEMETAAN (MAPPING) '
-M_User "Maps to" --> T_User
-M_Product "Maps to" --> T_Product
+M_User -right-> T_User : Maps to
+M_Product -right-> T_Product : Maps to
+M_Recipe -right-> T_Recipe : Maps to
+M_RI -right-> T_RI : Maps to
+M_Log -right-> T_Log : Maps to
 
 @enduml

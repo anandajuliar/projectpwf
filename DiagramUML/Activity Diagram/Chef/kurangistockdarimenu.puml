@@ -1,4 +1,4 @@
-@startuml
+@startuml kurangistockdarimenu Act
 |User (Chef)|
 start
 :Membuka menu "Dapur Produksi";

@@ -1,4 +1,4 @@
-@startuml
+@startuml dashboard
 actor Admin
 boundary "Dashboard View (Blade)" as UI
 control "JavaScript Fetch Engine" as JS

@@ -1,4 +1,4 @@
-@startuml
+@startuml produksi
 |User|
 start
 :Membuka halaman "Dapur Produksi";
