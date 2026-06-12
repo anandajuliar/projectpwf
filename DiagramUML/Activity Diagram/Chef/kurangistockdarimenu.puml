@@ -1,0 +1,46 @@
+@startuml
+|User (Chef)|
+start
+:Membuka menu "Dapur Produksi";
+
+|System|
+:Memuat katalog resep khusus Akses Chef;
+|Database|
+:Query tabel 'recipes' yang berstatus aktif;
+|System|
+:Render kartu resep lengkap dengan info jumlah jenis bahan baku;
+
+|User (Chef)|
+:Klik pada kartu resep yang akan dieksekusi (cth: Baguette Klasik);
+|System|
+:Munculkan Modal Detail Resep standar operasional;\nMenampilkan info "Waktu Persiapan" & list "Komposisi Bahan";
+:Validasi ketersediaan real-time tiap bahan (dot hijau/kuning/merah);
+
+|User (Chef)|
+:Klik tombol jingga "Mulai Produksi (Potong Stok)";
+
+|System|
+:Ubah status tombol menjadi disabled / loading;
+|Database|
+:Looping cek seluruh kebutuhan komposisi bahan baku vs sisa stok;
+
+if (Apakah ada bahan baku yang kurang / habis?) then (Ya)
+    |System|
+    :Batalkan eksekusi;
+    :Tampilkan pesan error/notifikasi bahan tidak mencukupi;
+    :Kembalikan tombol ke status aktif;
+    stop
+else (Tidak)
+    |Database|
+    :Looping kurangi kolom 'qty' di tabel 'products' sesuai porsi standar;
+    :Simpan log riwayat aktivitas dapur produksi;
+    |System|
+    :Tutup Modal Detail Resep;
+    :Panggil tampilToast('success', ...);
+    :Menampilkan Toast hijau sukses di bawah kanan;
+    :Jeda 1.5 detik, lalu muat ulang halaman (window.location.reload);
+    |User (Chef)|
+    :Melihat halaman ter-refresh dengan kondisi stok bahan baku baru;
+    stop
+endif
+@enduml

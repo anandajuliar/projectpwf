@@ -4,19 +4,19 @@ start
 :Membuka halaman Dashboard;
 
 |System|
-:Memicu fungsi penarikan data performa toko;
-:Meminta data agregat stok rendah & log produksi;
+:Memicu fungsi perhitungan data;
 
 |Database|
-:Query tabel 'products' (cek qty < min_qty);
-:Query tabel 'recipes' / log aktivitas terbaru;
-:Mengembalikan data ke sistem;
+:Hitung total variasi bahan (tabel products);
+:Hitung jumlah item stok rendah (qty < min_qty);
+:Hitung jumlah item stok habis (qty = 0);
+:Query daftar produk stok rendah/habis;
 
 |System|
-:Menghitung statistik data;
-:Render grafik chart & memunculkan badge alert stok tipis;
+:Render 3 kotak metrik (Total, Rendah, Habis);
+:Render list "Peringatan Stok Rendah & Habis";
 
-|User (Admin)|
-:Melihat ringkasan grafik & peringatan stok di layar;
+|Admin|
+:Melihat ringkasan kondisi gudang;
 stop
 @enduml

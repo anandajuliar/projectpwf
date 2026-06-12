@@ -1,36 +1,36 @@
 @startuml
-|User (Admin)|
+|Admin|
 start
 :Membuka menu Dapur Produksi;
 
-if (Pilih Aksi CRUD?) then (Tambah / Edit Resep (C/U))
-    :Mengisi/mengubah data resep & komposisi bahan baku;
-    :Klik tombol "Simpan Resep";
+if (Pilih Aksi?) then (Buat/Edit Resep)
+    :Klik "+ Buat Resep Baru" atau icon "Edit";
     |System|
-    :Validasi kelengkapan data & format porsi;
-    |Database|
-    :Simpan/Update data ke tabel 'recipes' & 'recipe_ingredients';
-elseif (Hapus Resep (D)) then
-    |User (Admin)|
-    :Klik tombol "Hapus" pada resep;
+    :Munculkan Modal Form Resep;
+    |Admin|
+    :Input Nama, Kategori, Portorsi, Waktu,\ndan Deskripsi;
+    :Klik "+ Tambah Bahan" (Komposisi);
+    :Pilih Bahan Baku, Input Jumlah & Catatan;
+    :Klik "Simpan Perubahan / Resep Baru";
     |System|
-    :Menampilkan pop-up konfirmasi hapus;
+    :Validasi input & ketersediaan ID bahan;
     |Database|
-    :Hapus data resep dari database secara permanen;
-else (Lihat Detail Resep (R))
-    |User (Admin)|
-    :Klik salah satu kartu Resep di halaman;
+    :Update/Insert tabel 'recipes';
+    :Sync data ke tabel 'recipe_ingredients';
+else (Hapus Resep)
+    |Admin|
+    :Klik link merah "Hapus Resep" di dalam modal;
     |System|
-    :Request detail resep & sisa stok bahan baku;
+    :Konfirmasi penghapusan resep;
     |Database|
-    :Query data dari tabel 'recipes' dan 'products';
+    :Hapus data resep & komposisi;
 endif
 
 |System|
-:Render pembaruan halaman & panggil tampilToast('success', ...);
-:Menampilkan Toast hijau di pojok kanan bawah;
-
-|User (Admin)|
-:Melihat perubahan data resep langsung terupdate di layar;
+:Tutup Modal;
+:Tampilkan Toast Sukses;
+:Jalankan muatResep() (Refresh kartu);
+|Admin|
+:Melihat perubahan kartu resep di layar;
 stop
 @enduml

@@ -1,28 +1,35 @@
 @startuml
-|User (Admin)|
+|Admin|
 start
 :Membuka menu Master Gudang;
 
-if (Pilih Aksi?) then (Tambah / Edit Master Bahan Baku)
-    :Mengisi data (Nama Bahan, Kategori, Satuan, Min Stok);
-    :Klik tombol "Simpan Produk";
+if (Aksi?) then (Filter Status Stok)
+    :Klik dropdown "Status Stok";
+    :Pilih (Normal / Rendah / Habis);
     |System|
-    :Validasi format angka dan input;
+    :Request data berdasarkan filter;
     |Database|
-    :Insert atau Update data ke tabel 'products';
-else (Hapus Bahan)
-    |User (Admin)|
-    :Klik tombol "Hapus" pada kartu bahan baku;
+    :Query products WHERE qty status;
     |System|
-    :Memunculkan pop-up konfirmasi hapus;
+    :Render tabel sesuai kategori stok;
+else (Tambah Bahan Baku)
+    |Admin|
+    :Klik "+ Tambah Bahan Baku";
+    |System|
+    :Munculkan Modal "Tambah Bahan Baku";
+    |Admin|
+    :Input Nama, Kategori, Satuan, Stok Awal,\nBatas Minimum, Harga, dan Deskripsi;
+    :Klik "Simpan";
+    |System|
+    :Validasi tipe data (angka/string);
     |Database|
-    :Hapus data produk dari database;
+    :Insert data baru ke tabel 'products';
 endif
 
 |System|
-:Menampilkan Toast sukses;
-
-|User (Admin)|
-:Melihat daftar komponen stok gudang terbaru;
+:Panggil tampilToast('success', ...);
+:Muat ulang data tabel gudang;
+|Admin|
+:Melihat list bahan baku terupdate;
 stop
 @enduml

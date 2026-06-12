@@ -1,28 +1,32 @@
 @startuml
-|User (Admin)|
+|Admin|
 start
 :Membuka menu Akun Karyawan;
 
-if (Pilih Aksi?) then (Tambah / Edit Karyawan)
-    :Mengisi form data (Nama, Email, Role, Status);
-    :Klik tombol "Simpan Akun";
+if (Pilih Aksi?) then (Daftarkan Chef Baru)
+    :Klik "+ Daftarkan Chef Baru";
     |System|
-    :Validasi kelengkapan form & keunikan email;
-    |Database|
-    :Insert atau Update data ke tabel 'users';
-else (Hapus / Nonaktifkan)
-    |User (Admin)|
-    :Klik tombol "Hapus" pada baris karyawan;
+    :Munculkan Modal "Pendaftaran Chef Baru";
+    |Admin|
+    :Input Nama, Email, dan Password;
+    :Klik "Simpan Data";
     |System|
-    :Memunculkan pop-up konfirmasi hapus;
+    :Validasi format email & password;
     |Database|
-    :Hapus data user dari tabel 'users';
+    :Simpan data user (role: Staf Dapur);
+else (Cabut/Edit Akses)
+    |Admin|
+    :Klik "Cabut Akses" atau "Edit";
+    |System|
+    :Konfirmasi perubahan status akun;
+    |Database|
+    :Update status 'is_active' atau data user;
 endif
 
 |System|
-:Menampilkan Toast sukses;
-
-|User (Admin)|
-:Melihat daftar tabel karyawan langsung terupdate;
+:Menampilkan Toast Notifikasi Sukses;
+:Update tabel "Daftar Pengguna Aktif";
+|Admin|
+:Melihat perubahan di tabel karyawan;
 stop
 @enduml

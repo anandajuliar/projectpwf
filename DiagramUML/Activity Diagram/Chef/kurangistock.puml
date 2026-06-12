@@ -1,28 +1,47 @@
 @startuml
-|User|
+|User (Chef)|
 start
-:Membuka halaman Cek Sisa Stok;
-:Klik tombol "Gunakan Bahan" pada item;
-:Menginput jumlah pemakaian dan catatan (opsional);
+:Membuka menu "Cek Sisa Stok";
 
 |System|
-if (Apakah input valid / > 0?) then (Tidak)
-    :Menampilkan pesan error input;
+:Memuat data seluruh bahan baku;
+|Database|
+:Query tabel 'products' (nama, kategori, sisa stok);
+|System|
+:Render kartu stok dengan indikator status ("STOK AMAN");
+
+|User (Chef)|
+:Klik tombol "Gunakan Bahan" pada item yang dipilih;
+|System|
+:Munculkan Modal "Gunakan Bahan" berisi detail item & stok saat ini;
+
+|User (Chef)|
+:Menginput "Jumlah yang Digunakan" (mendukung angka desimal);\n(Opsional) Mengisi kolom "Catatan";
+:Klik tombol "Potong Stok";
+
+|System|
+:Validasi input (pastikan berupa angka dan > 0);
+if (Apakah input valid?) then (Tidak)
+    :Tampilkan pesan error validasi di form;
     stop
 else (Ya)
     |Database|
-    :Cek ketersediaan sisa stok;
-    
-    if (Stok di database mencukupi?) then (Tidak)
+    :Cek apakah sisa stok mencukupi;
+    if (Stok mencukupi?) then (Tidak)
         |System|
-        :Menampilkan pesan stok tidak cukup;
+        :Tampilkan pesan error "Stok tidak mencukupi";
         stop
     else (Ya)
-        :Update / kurangi kuantiti stok di tabel produk;
+        |Database|
+        :Kurangi kuantitas produk di tabel 'products';
+        :Simpan log pemakaian bahan baku;
         |System|
-        :Menampilkan Toast Sukses;
-        |User|
-        :Melihat pembaruan angka stok secara instan;
+        :Tutup Modal;
+        :Panggil tampilToast('success', ...);
+        :Menampilkan Toast hijau sukses di bawah kanan;
+        :Panggil fetchProducts() untuk update sisa stok secara gaib;
+        |User (Chef)|
+        :Melihat angka sisa stok di kartu langsung berkurang;
         stop
     endif
 endif
