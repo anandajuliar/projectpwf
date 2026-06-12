@@ -1,58 +1,55 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🥐 BakeLab - Sistem Inventaris & Manajemen Dapur (SRS)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+🔗 **Live Production URL:** [http://bakelab.studikinerja.my.id](http://bakelab.studikinerja.my.id)
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📖 Deskripsi Proyek
+BakeLab adalah sistem informasi berbasis web yang dirancang khusus untuk mendigitalisasi proses pencatatan inventaris (Gudang) dan manajemen operasional (Dapur) secara terintegrasi. Sistem ini memastikan ketersediaan bahan baku terpantau secara akurat dan *real-time* dengan fitur pemotongan stok otomatis saat proses produksi berjalan.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 💻 Tech Stack
+* **Framework Backend:** Laravel (PHP 8.3)
+* **Database:** MySQL
+* **Frontend:** Blade Templating Engine, Vite (CSS/JS)
+* **Deployment:** cPanel Hosting (Live Production)
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## ⚙️ System Requirements Specification (SRS)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 1. Functional Requirements & Validation Rules
+Sistem memiliki fitur utama yang dilengkapi dengan validasi logika bisnis (*Business Rules*) pada level server untuk memastikan integritas data:
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+#### **[FR-01] Autentikasi & Manajemen Pengguna**
+* **Deskripsi:** akses admin & chef
+* **Validation & Business Rules:**
+  * Kredensial *login* (Email & Password) wajib diisi.
+  * Pembuatan/pembaruan akun wajib menggunakan format email berstandar 
+  * Nama karyawan minimal 3 huruf dan **hanya boleh berisi huruf serta spasi** (menolak karakter aneh/angka).
+  * Password akun baru minimal 8 karakter.
 
-## Agentic Development
+#### **[FR-02] Manajemen Gudang (Inventory Control)**
+* **Deskripsi:** Fitur CRUD untuk bahan baku dan pencatatan keluar-masuk (tambah/kurangi) stok.
+* **Validation & Business Rules:**
+  * Nama bahan baku wajib diisi, maksimal 255 karakter, dan divalidasi dengan Regex (hanya boleh huruf, angka, spasi, dan simbol `( ) ' & -`).
+  * Satuan (*Unit*) harus terstandarisasi, hanya menerima nilai: `gram`, `kg`, `butir`, `ml`, `liter`, `sdm`, `sdt`, `pcs`.
+  * Jumlah stok saat ini dan penetapan stok minimum wajib berupa angka dan **tidak boleh negatif** (`>= 0`).
+  * Harga beli per satuan wajib berupa angka dengan nilai minimum **Rp 3.000**.
+  * Untuk aktivitas Penambahan (`AddStock`) dan Pengurangan (`ReduceStock`) stok, kuantitas wajib diisi dengan nilai minimum `0.01` (mendukung desimal), dengan opsional catatan maksimal 500 karakter.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+#### **[FR-03] Manajemen Dapur (Recipe & Production Control)**
+* **Deskripsi:** pencatatan resep produk dan eksekusi produksi harian.
+* **Validation & Business Rules:**
+  * Nama resep divalidasi Regex (hanya boleh huruf, angka, spasi, dan simbol `( ) ' & - / , .`).
+  * Pembuatan resep wajib menyertakan jumlah porsi *default* minimal `1`.
+  * Setiap resep **wajib** memiliki sekurang-kurangnya 1 komponen bahan baku pendukung (*ingredients minimum 1*).
+  * **[Validasi Eksekusi Produksi]** Saat resep dieksekusi/dimasak, input jumlah porsi wajib berupa bilangan bulat (`integer`) dengan batas rentang produksi **1 hingga 9999** porsi/loyang.
 
-```bash
-composer require laravel/boost --dev
+#### **[FR-04] Sinkronisasi & Pemotongan Stok Otomatis**
+* **Deskripsi:** Sistem otomatis memotong stok Gudang berdasarkan pemakaian Dapur.
+* **Business Rules:**
+  * Sistem akan melakukan kalkulasi (*Portions x Qty Per Portion*) dan mengecek ketersediaan bahan baku di Gudang sebelum proses produksi disetujui.
+  * Jika kuantitas bahan baku di Gudang kurang, sistem akan menolak aksi untuk mencegah anomali stok negatif.
 
-php artisan boost:install
-```
-
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
