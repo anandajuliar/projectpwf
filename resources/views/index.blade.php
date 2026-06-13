@@ -107,7 +107,7 @@ function tampilkanToast(pesan, tipe = 'sukses') {
         : tipe === 'peringatan'
         ? 'bg-amber-500 text-white'
         : 'bg-red-600 text-white';
-    const ikon = tipe === 'sukses' ? '✅' : tipe === 'peringatan' ? '⚠️' : '❌';
+    const ikon = tipe === 'sukses' ? '' : tipe === 'peringatan' ? '' : '';
 
     const toast = document.createElement('div');
     toast.className = `pointer-events-auto ${warna} rounded-xl shadow-lg px-5 py-4 flex items-start gap-3 max-w-sm toast-enter`;
@@ -275,7 +275,7 @@ async function muatDaftarPengguna() {
                 ? 'bg-blue-100 text-blue-800'
                 : 'bg-amber-100 text-amber-800';
             const badgeLabel = isAdmin ? 'Admin Gudang' : 'Staf Dapur';
-            const ikon = isAdmin ? '👨‍💼' : '👨‍🍳';
+            const ikon = isAdmin ? '' : '';
             const aksi = isAdmin
                 ? '<td class="text-center py-3 px-4 text-gray-400 italic text-sm">Tidak bisa dihapus</td>'
                 : `<td class="text-center py-3 px-4">

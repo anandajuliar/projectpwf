@@ -9,7 +9,7 @@
 
         {{-- Pesan Error --}}
         <div id="error-message" class="hidden mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200 flex items-start gap-2">
-            <span class="mt-0.5">❌</span>
+            <span class="mt-0.5"></span>
             <span id="error-text"></span>
         </div>
 

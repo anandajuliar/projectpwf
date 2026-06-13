@@ -14,7 +14,7 @@
             <p class="text-sm text-gray-500 font-semibold uppercase mb-1">Total Variasi Bahan</p>
             <h3 class="text-3xl font-bold text-gray-800"><span id="stat-total">—</span> <span class="text-lg text-gray-400 font-normal">Item</span></h3>
         </div>
-        <div class="p-3 bg-blue-100 rounded-full"><span class="text-2xl">📦</span></div>
+        <div class="p-3 bg-blue-100 rounded-full"><span class="text-2xl"></span></div>
     </div>
 
     <div class="bg-white p-6 rounded-xl shadow border-l-4 border-amber-500 flex items-center justify-between">
@@ -22,7 +22,7 @@
             <p class="text-sm text-gray-500 font-semibold uppercase mb-1">Stok Rendah / Hampir Habis</p>
             <h3 class="text-3xl font-bold text-amber-600"><span id="stat-low">—</span> <span class="text-lg text-amber-400 font-normal">Item</span></h3>
         </div>
-        <div class="p-3 bg-amber-100 rounded-full"><span class="text-2xl">⚠️</span></div>
+        <div class="p-3 bg-amber-100 rounded-full"><span class="text-2xl"></span></div>
     </div>
 
     <div class="bg-white p-6 rounded-xl shadow border-l-4 border-red-500 flex items-center justify-between">
@@ -30,14 +30,14 @@
             <p class="text-sm text-gray-500 font-semibold uppercase mb-1">Stok Habis</p>
             <h3 class="text-3xl font-bold text-red-600"><span id="stat-out">—</span> <span class="text-lg text-red-400 font-normal">Item Kritis</span></h3>
         </div>
-        <div class="p-3 bg-red-100 rounded-full"><span class="text-2xl">🚨</span></div>
+        <div class="p-3 bg-red-100 rounded-full"><span class="text-2xl"></span></div>
     </div>
 </div>
 
 <div class="bg-white shadow rounded-xl overflow-hidden border border-gray-100">
     <div class="bg-red-50 border-b border-red-100 p-4 flex justify-between items-center">
         <h3 class="font-bold text-red-800 text-lg flex items-center">
-            <span class="mr-2">🚨</span> Peringatan Stok Rendah & Habis
+            <span class="mr-2"></span> Peringatan Stok Rendah & Habis
         </h3>
         <a href="/gudang" class="text-sm text-amber-700 hover:underline font-semibold">Lihat semua →</a>
     </div>
@@ -69,15 +69,15 @@ document.addEventListener('DOMContentLoaded', async function () {
         const list = document.getElementById('alert-list');
 
         if (!d.alert_products.length) {
-            list.innerHTML = '<div class="p-6 text-center text-green-600 font-semibold">✅ Semua stok dalam kondisi aman!</div>';
+            list.innerHTML = '<div class="p-6 text-center text-green-600 font-semibold">Semua stok dalam kondisi aman!</div>';
             return;
         }
 
         list.innerHTML = d.alert_products.map(p => {
             const isOut   = p.stock_status === 'out';
             const badge   = isOut
-                ? `<span class="bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full">🚨 Habis</span>`
-                : `<span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full">⚠️ Rendah</span>`;
+                ? `<span class="bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full">Habis</span>`
+                : `<span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full">Rendah</span>`;
             const note    = isOut
                 ? `<p class="text-xs text-red-500 mt-1 font-semibold">Segera Restock!</p>`
                 : `<p class="text-xs text-amber-600 mt-1 font-semibold">Sisa: ${p.qty} ${p.unit} (min: ${p.min_qty})</p>`;

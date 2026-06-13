@@ -219,10 +219,10 @@ function tampilToast(type, msg) {
     
     if (type === 'success') {
         inner.className = "px-6 py-4 rounded-xl shadow-2xl text-white font-bold text-sm max-w-md flex items-start gap-3 border-l-4 border-amber-800 bg-amber-500";
-        icon.innerText = "✅";
+        icon.innerText = "";
     } else {
         inner.className = "px-6 py-4 rounded-xl shadow-2xl text-white font-bold text-sm max-w-md flex items-start gap-3 border-l-4 border-red-800 bg-red-500";
-        icon.innerText = "⚠️";
+        icon.innerText = "";
     }
     
     document.getElementById('toast-msg').innerText = msg;

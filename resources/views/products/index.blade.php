@@ -13,9 +13,9 @@
             <input type="text" id="searchInput" onkeyup="cariProduk()" placeholder="Cari nama bahan..." class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
             <select id="filterStatus" onchange="cariProduk()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white">
                 <option value="">Semua Status</option>
-                <option value="normal">✅ Stok Normal</option>
-                <option value="low">⚠️ Stok Rendah</option>
-                <option value="out">🚨 Stok Habis</option>
+                <option value="normal">Stok Normal</option>
+                <option value="low">Stok Rendah</option>
+                <option value="out">Stok Habis</option>
             </select>
         </div>
         <button onclick="bukaModalTambah()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg shadow transition">
@@ -58,7 +58,7 @@
     <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
         <div class="flex justify-between items-center mb-5 border-b pb-3">
             <h3 class="text-xl font-bold text-gray-800 flex items-center">
-                <span class="mr-2">✂️</span> Gunakan Bahan
+                <span class="mr-2"></span> Gunakan Bahan
             </h3>
             <button onclick="tutupModalKurangi()" class="text-gray-400 hover:text-red-500 text-3xl font-bold leading-none">&times;</button>
         </div>
@@ -92,7 +92,7 @@
             <button type="button" onclick="tutupModalKurangi()" class="px-5 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition">Batal</button>
             <button type="button" id="btn-kurangi-submit" onclick="submitKurangiStok()"
                 class="px-6 py-3 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition shadow-lg flex items-center gap-2">
-                <span>✂️</span> Potong Stok
+                <span></span> Potong Stok
             </button>
         </div>
     </div>
@@ -101,7 +101,7 @@
 <div id="modalTambahBahan" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
     <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all">
         <div class="flex justify-between items-center mb-6 border-b pb-3">
-            <h3 class="text-2xl font-bold text-gray-800 flex items-center"><span class="mr-2">📦</span> <span id="modal-tambah-judul">Tambah Bahan Baku</span></h3>
+            <h3 class="text-2xl font-bold text-gray-800 flex items-center"><span class="mr-2"></span> <span id="modal-tambah-judul">Tambah Bahan Baku</span></h3>
             <button onclick="tutupModalTambah()" class="text-gray-400 hover:text-red-500 text-3xl font-bold leading-none">&times;</button>
         </div>
 
@@ -182,7 +182,7 @@
     <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
         <div class="flex justify-between items-center mb-5 border-b pb-3">
             <h3 class="text-xl font-bold text-gray-800 flex items-center">
-                <span class="mr-2">📥</span> Tambah Stok / Restock
+                <span class="mr-2"></span> Tambah Stok / Restock
             </h3>
             <button onclick="tutupModalRestok()" class="text-gray-400 hover:text-red-500 text-3xl font-bold leading-none">&times;</button>
         </div>
@@ -348,8 +348,8 @@ function renderChef(products) {
 
     const statusCfg = {
         'normal': { badge: 'bg-green-100 text-green-800', label: 'Stok Aman',   color: 'text-green-600', disabled: false },
-        'low':    { badge: 'bg-amber-100 text-amber-800', label: '⚠️ Stok Rendah', color: 'text-amber-500', disabled: false },
-        'out':    { badge: 'bg-red-100 text-red-800',    label: '🚨 Stok Habis', color: 'text-red-500',   disabled: true  },
+        'low':    { badge: 'bg-amber-100 text-amber-800', label: 'Stok Rendah', color: 'text-amber-500', disabled: false },
+        'out':    { badge: 'bg-red-100 text-red-800',    label: 'Stok Habis', color: 'text-red-500',   disabled: true  },
     };
 
     grid.innerHTML = products.map(p => {
@@ -367,7 +367,7 @@ function renderChef(products) {
                 <p class="${cfg.color} font-extrabold text-2xl mb-6">Sisa: ${p.qty} ${escHtml(p.unit)}</p>
             </div>
             <button ${btnAttr}>
-                👨‍🍳 Gunakan Bahan
+                Gunakan Bahan
             </button>
         </div>`;
     }).join('');
@@ -422,7 +422,7 @@ async function submitKurangiStok() {
 
     const btn = document.getElementById('btn-kurangi-submit');
     btn.disabled = true;
-    btn.innerText = '⏳ Memproses...';
+    btn.innerText = 'Memproses...';
     errEl.classList.add('hidden');
 
     try {
@@ -440,7 +440,7 @@ async function submitKurangiStok() {
 
         if (res.ok && json.success) {
             tutupModalKurangi();
-            tampilToast('success', `✅ Stok ${selectedProductData.name} berhasil dikurangi ${qty} ${selectedProductData.unit}!`);
+            tampilToast('success', `Stok ${selectedProductData.name} berhasil dikurangi ${qty} ${selectedProductData.unit}!`);
             muatProduk(currentPage);
         } else {
             let pesanError = json.message || 'Gagal memotong stok.';
@@ -458,7 +458,7 @@ async function submitKurangiStok() {
         errEl.classList.remove('hidden');
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<span>✂️</span> Potong Stok';
+        btn.innerHTML = '<span></span> Potong Stok';
     }
 }
 
@@ -492,7 +492,7 @@ async function submitRestok() {
 
     const btn = document.getElementById('btn-restok-submit');
     btn.disabled = true;
-    btn.innerText = '⏳ Memproses...';
+    btn.innerText = ' Memproses...';
     errEl.classList.add('hidden');
 
     try {
@@ -510,7 +510,7 @@ async function submitRestok() {
 
         if (res.ok && json.success) {
             tutupModalRestok();
-            tampilToast('success', `📥 Stok ${selectedProductData.name} berhasil ditambah ${qty} ${selectedProductData.unit}!`);
+            tampilToast('success', ` Stok ${selectedProductData.name} berhasil ditambah ${qty} ${selectedProductData.unit}!`);
             muatProduk(currentPage);
         } else {
             let pesanError = json.message || 'Gagal menambah stok.';
@@ -528,7 +528,7 @@ async function submitRestok() {
         errEl.classList.remove('hidden');
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<span>📥</span> Tambah Stok';
+        btn.innerHTML = '<span></span> Tambah Stok';
     }
 }
 
@@ -610,7 +610,7 @@ async function simpanProduk() {
 
     errEl.classList.add('hidden');
     btn.disabled = true;
-    btn.innerText = '⏳ Menyimpan...';
+    btn.innerText = ' Menyimpan...';
 
     try {
         const url    = isEdit ? `/api/products/${editId}` : '/api/products';
@@ -630,7 +630,7 @@ async function simpanProduk() {
 
         if (res.ok && json.success) {
             tutupModalTambah();
-            tampilToast('success', isEdit ? `✏️ Bahan "${payload.name}" berhasil diperbarui!` : `📦 Bahan "${payload.name}" berhasil ditambahkan!`);
+            tampilToast('success', isEdit ? `Bahan "${payload.name}" berhasil diperbarui!` : `📦 Bahan "${payload.name}" berhasil ditambahkan!`);
             muatProduk(currentPage);
         } else {
             let pesanError = json.message || 'Gagal menyimpan data.';
@@ -663,7 +663,7 @@ async function hapusProduk(id, nama) {
         const json = await res.json();
 
         if (res.ok && json.success) {
-            tampilToast('success', `🗑️ Bahan "${nama}" berhasil dihapus.`);
+            tampilToast('success', `Bahan "${nama}" berhasil dihapus.`);
             muatProduk(currentPage);
         } else {
             tampilToast('error', json.message || 'Gagal menghapus.');
