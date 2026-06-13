@@ -268,7 +268,7 @@ function renderResep(recipes) {
         <div onclick='klikCardResep(${JSON.stringify(r)})' class="bg-white p-0 rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 overflow-hidden cursor-pointer transform transition hover:-translate-y-1 group">
             <div class="${bg} h-32 flex items-center justify-center relative overflow-hidden">
                 <span class="text-6xl group-hover:scale-110 transition duration-300">${emoji}</span>
-                ${userRole === 'admin' ? '<span class="absolute top-2 right-2 bg-white bg-opacity-70 text-gray-800 text-xs px-2 py-1 rounded font-bold">✏️ Edit</span>' : ''}
+                ${userRole === 'admin' ? '<span class="absolute top-2 right-2 bg-white bg-opacity-70 text-gray-800 text-xs px-2 py-1 rounded font-bold">Edit</span>' : ''}
             </div>
             <div class="p-5 text-center">
                 <h3 class="text-xl font-bold text-gray-800 mb-2 line-clamp-1">${escHtml(r.name)}</h3>

@@ -328,11 +328,11 @@ function renderAdmin(products) {
             <td class="text-center py-3 px-4">
                 <div class="flex items-center justify-center gap-1 flex-wrap">
                     <button onclick='bukaModalRestok(${JSON.stringify(p)})' title="Tambah Stok / Restock"
-                        class="bg-green-100 hover:bg-green-200 text-green-800 text-xs font-bold px-2 py-1 rounded-lg transition">📥 Restok</button>
+                        class="bg-green-100 hover:bg-green-200 text-green-800 text-xs font-bold px-2 py-1 rounded-lg transition">Restok</button>
                     <button onclick='bukaModalEdit(${JSON.stringify(p)})' title="Edit Produk"
-                        class="bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold px-2 py-1 rounded-lg transition">✏️ Edit</button>
+                        class="bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold px-2 py-1 rounded-lg transition">Edit</button>
                     <button onclick="hapusProduk(${p.id}, '${escHtml(p.name)}')" title="Hapus Produk"
-                        class="bg-red-100 hover:bg-red-200 text-red-800 text-xs font-bold px-2 py-1 rounded-lg transition">🗑️ Hapus</button>
+                        class="bg-red-100 hover:bg-red-200 text-red-800 text-xs font-bold px-2 py-1 rounded-lg transition">Hapus</button>
                 </div>
             </td>
         </tr>`;
